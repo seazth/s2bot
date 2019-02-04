@@ -76,7 +76,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <IncludePath>sc2client-api/project/include;sc2client-api/build/generated;$(IncludePath)</IncludePath>
-    <LibraryPath>sc2client-api/project/lib;sc2clientapi/build/bin;$(LibraryPath)</LibraryPath>
+    <LibraryPath>..\..\build\generated;sc2client-api/project/lib;D:\Files\STMN\IA\starcraft_bot\build\bin;sc2clientapi/build/bin;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -90,7 +90,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <AdditionalIncludeDirectories>..\s2client-api\build\generated;..\s2client-api\contrib\SDL-mirror\include;..\s2client-api\contrib\civetweb\include;..\s2client-api\src\..\include;..\s2client-api\contrib\protobuf\src;..\s2client-api\contrib\civetweb\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\project\include;..\..\build\generated;..\..\include\;..\..\include\s2client-api\contrib\SDL-mirror\include;..\..\include\s2client-api\contrib\civetweb\include;..\..\include\s2client-api\src\;..\..\include\s2client-api\contrib\protobuf\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>DEBUG;_SCL_SECURE_NO_WARNINGS;_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>

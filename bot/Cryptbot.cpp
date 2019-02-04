@@ -504,6 +504,8 @@ int32_t CryptBot::GetCurrentMaxSupply()
 
 void CryptBot::OnGameStart()
 {
+	Actions()->SendChat("get rekt !!");
+
 	const Units NewUnits = Observation()->GetUnits();
 	for (auto &u : NewUnits)
 	{
@@ -886,6 +888,7 @@ void CryptBot::OnUnitIdle(const Unit *unit) {
 		RushPylon = false;
 
 	}
+
 	switch (unit->unit_type.ToType()) {
 	case UNIT_TYPEID::PROTOSS_PROBE: {
 		if (unit->tag != ScoutingUnitTag)
@@ -1156,7 +1159,7 @@ void CryptBot::OnStep() {
 	CurrentMaxSupply = GetCurrentMaxSupply();
 	if (RushLocation == Point2D(0.0f, 0.0f))
 	{
-		std::cout << "Null rush location";
+		std::cout << "Null rush location" << std::endl;
 	}
 
 	CheckScouting(observation);

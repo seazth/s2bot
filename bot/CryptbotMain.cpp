@@ -34,6 +34,7 @@ int main(int argc, char* argv[])
 	// Step forward the game simulation.
 	while (coordinator.Update())
 	{
+		
 	}
 }
 #else
