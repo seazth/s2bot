@@ -591,7 +591,7 @@ bool CryptBot::CheckShouldBuildProbe(const sc2::Unit Nexus)
 		Actions()->UnitCommand(&Nexus, ABILITY_ID::TRAIN_PROBE);
 		return true;
 	}
-	else if (FindNearestGeaser(Nexus.pos, mineral_target, MAX_GEASER_DISTANCE))
+	else if (FindNearestGeaser(Nexus.pos, mineral_target, MAX_GEASER_DISTANCE)
 	{
 		Actions()->UnitCommand(&Nexus, ABILITY_ID::TRAIN_PROBE);
 		return true;
@@ -890,16 +890,16 @@ void CryptBot::OnUnitIdle(const Unit *unit) {
 	}
 
 	switch (unit->unit_type.ToType()) {
-	case UNIT_TYPEID::PROTOSS_PROBE: {
-		if (unit->tag != ScoutingUnitTag)
-		{
-			uint64_t valid_mineral_patch;
-			FindNearestMineralPatch(unit->pos, valid_mineral_patch);
-			Actions()->UnitCommand(unit, ABILITY_ID::HARVEST_GATHER, Observation()->GetUnit(valid_mineral_patch));
-			return;
+		case UNIT_TYPEID::PROTOSS_PROBE: {
+			if (unit->tag != ScoutingUnitTag)
+			{
+				uint64_t valid_mineral_patch;
+				FindNearestMineralPatch(unit->pos, valid_mineral_patch);
+				Actions()->UnitCommand(unit, ABILITY_ID::HARVEST_GATHER, Observation()->GetUnit(valid_mineral_patch));
+				return;
 
+			}
 		}
-	}
 	}
 }
 
