@@ -534,51 +534,51 @@ void CryptBot::OnGameStart()
 
 void CryptBot::OnUnitDestroyed(const Unit *unit) {
 	switch (unit->unit_type.ToType()) {
-	case UNIT_TYPEID::PROTOSS_PROBE: {
-		if (unit->tag == ScoutingUnitTag)
-		{
-			Scouting = false;
-			ScoutingUnitTag = GetAvailableWorker();
-		}
-		break;
-	}
-	case UNIT_TYPEID::PROTOSS_PYLON:
-		if (unit->alliance == sc2::Unit::Alliance::Self && Distance2D(unit->pos, *StartPosition) > Distance2D(unit->pos, RushLocation))
-		{
-			RushPylonDestroyed = true;
-			UseAltStrategy = true;
-		}
-		break;
-
-	case UNIT_TYPEID::PROTOSS_PHOTONCANNON:
-	{
-		if (unit->alliance == sc2::Unit::Alliance::Self && Distance2D(unit->pos, *StartPosition) < Distance2D(unit->pos, RushLocation))
-		{
-			CurrentDefenseCannons -= 1;
-			MaxDefenseCannons += 2;
-		}
-		break;
-	}
-	case UNIT_TYPEID::PROTOSS_VOIDRAY: {
-		/*
-		for (auto& ThisBG : BattleGroups)
-		{
-			int thisMember = 0;
-			for (const uint64_t ThisUnit : ThisBG.Members)
+		case UNIT_TYPEID::PROTOSS_PROBE: {
+			if (unit->tag == ScoutingUnitTag)
 			{
-				if (ThisUnit == unit.tag)
-				{
-					ThisBG.Members.erase(ThisBG.Members.begin() + thisMember);
-				}
-				thisMember++;
+				Scouting = false;
+				ScoutingUnitTag = GetAvailableWorker();
 			}
+			break;
 		}
-		*/
-	}
+		case UNIT_TYPEID::PROTOSS_PYLON:
+			if (unit->alliance == sc2::Unit::Alliance::Self && Distance2D(unit->pos, *StartPosition) > Distance2D(unit->pos, RushLocation))
+			{
+				RushPylonDestroyed = true;
+				UseAltStrategy = true;
+			}
+			break;
+
+		case UNIT_TYPEID::PROTOSS_PHOTONCANNON:
+		{
+			if (unit->alliance == sc2::Unit::Alliance::Self && Distance2D(unit->pos, *StartPosition) < Distance2D(unit->pos, RushLocation))
+			{
+				CurrentDefenseCannons -= 1;
+				MaxDefenseCannons += 2;
+			}
+			break;
+		}
+		case UNIT_TYPEID::PROTOSS_VOIDRAY: {
+			/*
+			for (auto& ThisBG : BattleGroups)
+			{
+				int thisMember = 0;
+				for (const uint64_t ThisUnit : ThisBG.Members)
+				{
+					if (ThisUnit == unit.tag)
+					{
+						ThisBG.Members.erase(ThisBG.Members.begin() + thisMember);
+					}
+					thisMember++;
+				}
+			}
+			*/
+		}
 	}
 }
 
-bool CryptBot::CheckShouldBuildProbe(const sc2::Unit Nexus)
+/*bool CryptBot::CheckShouldBuildProbe(const sc2::Unit Nexus)
 {
 	const ObservationInterface* observation = Observation();
 	if (CurrentMaxSupply >= observation->GetFoodUsed())
@@ -597,7 +597,7 @@ bool CryptBot::CheckShouldBuildProbe(const sc2::Unit Nexus)
 		return true;
 	}
 	return false;
-}
+}*/
 void CryptBot::OnUnitEnterVision(const Unit *unit)
 {
 	if (unit->unit_type == sc2::UNIT_TYPEID::TERRAN_SCV 
