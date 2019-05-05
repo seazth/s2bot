@@ -591,7 +591,7 @@ bool CryptBot::CheckShouldBuildProbe(const sc2::Unit Nexus)
 		Actions()->UnitCommand(&Nexus, ABILITY_ID::TRAIN_PROBE);
 		return true;
 	}
-	else if (FindNearestGeaser(Nexus.pos, mineral_target, MAX_GEASER_DISTANCE)
+	else if (FindNearestGeaser(Nexus.pos, mineral_target, MAX_GEASER_DISTANCE))
 	{
 		Actions()->UnitCommand(&Nexus, ABILITY_ID::TRAIN_PROBE);
 		return true;
