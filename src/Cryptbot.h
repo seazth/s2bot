@@ -82,6 +82,8 @@ private:
     bool FindNearestMineralPatch(const Point2D& start, uint64_t& target);
     bool TryBuildPylon(const ObservationInterface *observation);
     bool TryBuildStructure(ABILITY_ID ability_type_for_structure, UNIT_TYPEID unit_type = UNIT_TYPEID::PROTOSS_PROBE);
+	bool TryBuildStructureTuto(ABILITY_ID ability_type_for_structure, UNIT_TYPEID unit_type = UNIT_TYPEID::TERRAN_SCV);
+	bool TryBuildSupplyDepot();
     bool TryBuildBasePylon();
     // Tries to find a random location that can be pathed to on the map.
     // Returns 'true' if a new, random location has been found that is pathable by the unit.
