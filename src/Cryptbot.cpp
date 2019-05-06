@@ -881,25 +881,14 @@ int64_t CryptBot::FindNearestUnit(const Point2D& start, Units UnitSet, ATTACK_TY
 
 
 void CryptBot::OnUnitIdle(const Unit *unit) {
-	if (unit->tag == RushUnitTag && RushPylon == true)
-	{
-		ScoutingUnitTag = RushUnitTag;
-		TryBuildStructure(ABILITY_ID::BUILD_PYLON, UNIT_TYPEID::PROTOSS_PROBE, GetNearestBuildableLocationFor(ABILITY_ID::BUILD_PYLON, RushLocation, QueryType::None, PylonSearchParams), true);
-		RushPylon = false;
-
-	}
-
 	switch (unit->unit_type.ToType()) {
-		case UNIT_TYPEID::PROTOSS_PROBE: {
-			if (unit->tag != ScoutingUnitTag)
-			{
-				uint64_t valid_mineral_patch;
-				FindNearestMineralPatch(unit->pos, valid_mineral_patch);
-				Actions()->UnitCommand(unit, ABILITY_ID::HARVEST_GATHER, Observation()->GetUnit(valid_mineral_patch));
-				return;
-
-			}
+		case UNIT_TYPEID::TERRAN_COMMANDCENTER: {
+			Actions()->UnitCommand(unit, ABILITY_ID::TRAIN_SCV);
+			break;
 		}
+		default: {
+			break;
+		}		
 	}
 }
 
@@ -1135,8 +1124,11 @@ void CryptBot::OnStep() {
 	{
 		return;
 	}
+
+
+
 	//Throttle some behavior that can wait to avoid duplicate orders.
-	int frames_to_skip = 4;
+	/*int frames_to_skip = 4;
 	if (observation->GetFoodUsed() >= observation->GetFoodCap()) {
 		frames_to_skip = 6;
 	}
@@ -1194,8 +1186,7 @@ void CryptBot::OnStep() {
 
 		}
 
-	}
-
+	}*/
 }
 
 void CryptBot::TryBuildArmy(const ObservationInterface* observation)
