@@ -1218,7 +1218,7 @@ void CryptBot::OnStep() {
 	if (CountUnitType(UNIT_TYPEID::TERRAN_BARRACKS) < 5) {
 		TryBuildBarracks();
 	}
-	else {
+	else if (CountUnitType(UNIT_TYPEID::TERRAN_FACTORY) == 1) {
 		TryBuildFactory();
 	}
 	
@@ -1358,8 +1358,7 @@ bool CryptBot::TryBuildRefinery() {
 	return TryBuildStructureTuto(ABILITY_ID::BUILD_REFINERY);
 }
 bool CryptBot::TryBuildFactory() {
-	if (CountUnitType(UNIT_TYPEID::TERRAN_FACTORY) == 1 || 
-		(Observation()->GetMinerals() < 150 && Observation()->GetVespene() < 100)) {
+	if (Observation()->GetMinerals() < 150 && Observation()->GetVespene() < 100) {
 		return false;
 	}
 	return TryBuildStructureTuto(ABILITY_ID::BUILD_FACTORY);
