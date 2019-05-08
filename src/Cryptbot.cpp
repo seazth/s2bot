@@ -1218,7 +1218,7 @@ void CryptBot::OnStep() {
 	if (CountUnitType(UNIT_TYPEID::TERRAN_BARRACKS) < 5) {
 		TryBuildBarracks();
 	}
-	else if (CountUnitType(UNIT_TYPEID::TERRAN_FACTORY) == 1) {
+	else if (CountUnitType(UNIT_TYPEID::TERRAN_FACTORY) < 1) {
 		TryBuildFactory();
 	}
 	
