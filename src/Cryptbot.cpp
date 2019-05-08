@@ -896,17 +896,29 @@ void CryptBot::OnUnitIdle(const Unit *unit) {
 		   const Unit* mineral_target = FindNearestMineralPatchTuto(unit->pos);
 		   if (!mineral_target) {
 			   break;
-		   }		
-		    Actions()->UnitCommand(unit, ABILITY_ID::SMART, mineral_target);
+		   }
+		   Actions()->UnitCommand(unit, ABILITY_ID::SMART, mineral_target);
 		    break;
 		}
 		case UNIT_TYPEID::TERRAN_BARRACKS: {
-			Actions()->UnitCommand(unit, ABILITY_ID::BUILD_REACTOR);
-			Actions()->UnitCommand(unit, ABILITY_ID::TRAIN_MARINE);
-			Actions()->UnitCommand(unit, ABILITY_ID::TRAIN_MARINE);
+			if (CountUnitType(UNIT_TYPEID::TERRAN_BARRACKSTECHLAB) == 0) {
+				Actions()->UnitCommand(unit, ABILITY_ID::BUILD_TECHLAB_BARRACKS);
+			}
+			else {
+				Actions()->UnitCommand(unit, ABILITY_ID::BUILD_REACTOR);
+				Actions()->UnitCommand(unit, ABILITY_ID::TRAIN_MARINE);
+				Actions()->UnitCommand(unit, ABILITY_ID::TRAIN_MARINE);
+			}	
+			break;
+		}
+		case UNIT_TYPEID::TERRAN_BARRACKSTECHLAB: {
+			Actions()->UnitCommand(unit, ABILITY_ID::RESEARCH_COMBATSHIELD);
 			break;
 		}
 		case UNIT_TYPEID::TERRAN_FACTORY: {
+			if (CountUnitType(UNIT_TYPEID::TERRAN_FACTORYTECHLAB) == 0) {
+				Actions()->UnitCommand(unit, ABILITY_ID::BUILD_TECHLAB);
+			}
 			Actions()->UnitCommand(unit, ABILITY_ID::TRAIN_SIEGETANK);
 			break;
 		}
@@ -1330,8 +1342,8 @@ bool CryptBot::TryBuildRefinery() {
 	return TryBuildStructureTuto(ABILITY_ID::BUILD_REFINERY);
 }
 bool CryptBot::TryBuildFactory() {
-	if (CountUnitType(UNIT_TYPEID::TERRAN_FACTORY) < 1 || 
-		(Observation()->GetMinerals() <= 150 && Observation()->GetVespene() <= 100)) {
+	if (CountUnitType(UNIT_TYPEID::TERRAN_FACTORY) == 1 || 
+		(Observation()->GetMinerals() < 150 && Observation()->GetVespene() < 100)) {
 		return false;
 	}
 	return TryBuildStructureTuto(ABILITY_ID::BUILD_FACTORY);
