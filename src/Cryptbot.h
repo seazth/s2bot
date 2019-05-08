@@ -91,6 +91,7 @@ private:
 	bool TryBuildRefinery();
 	const Unit* FindNearestGas(const Point2D& start);
 	bool TryBuildStructure(AbilityID ability_type_for_structure, UnitTypeID unit_type, Tag location_tag);
+	bool TryBuildFactory();
 	//
     bool TryBuildBasePylon();
     // Tries to find a random location that can be pathed to on the map.

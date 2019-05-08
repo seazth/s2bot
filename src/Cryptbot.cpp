@@ -906,6 +906,10 @@ void CryptBot::OnUnitIdle(const Unit *unit) {
 			Actions()->UnitCommand(unit, ABILITY_ID::TRAIN_MARINE);
 			break;
 		}
+		case UNIT_TYPEID::TERRAN_FACTORY: {
+			Actions()->UnitCommand(unit, ABILITY_ID::TRAIN_SIEGETANK);
+			break;
+		}
 		/*case UNIT_TYPEID::TERRAN_MARINE: {
 			const GameInfo& game_info = Observation()->GetGameInfo();
 			Actions()->UnitCommand(unit, ABILITY_ID::ATTACK_ATTACK, game_info.enemy_start_locations.front());
@@ -1186,6 +1190,9 @@ void CryptBot::OnStep() {
 	if (CountUnitType(UNIT_TYPEID::TERRAN_BARRACKS) < 5) {
 		TryBuildBarracks();
 	}
+	else {
+		TryBuildFactory();
+	}
 	
 
 	//Throttle some behavior that can wait to avoid duplicate orders.
@@ -1321,6 +1328,13 @@ bool CryptBot::TryBuildRefinery() {
 		return false;
 	}
 	return TryBuildStructureTuto(ABILITY_ID::BUILD_REFINERY);
+}
+bool CryptBot::TryBuildFactory() {
+	if (CountUnitType(UNIT_TYPEID::TERRAN_FACTORY) < 1 || 
+		(Observation()->GetMinerals() <= 150 && Observation()->GetVespene() <= 100)) {
+		return false;
+	}
+	return TryBuildStructureTuto(ABILITY_ID::BUILD_FACTORY);
 }
 
 void CryptBot::TryBuildArmy(const ObservationInterface* observation)
