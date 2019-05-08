@@ -88,6 +88,9 @@ private:
 	const Unit* FindNearestMineralPatchTuto(const Point2D& start);
 	size_t CountUnitType(UNIT_TYPEID unit_type);
 	bool TryBuildBarracks();
+	bool TryBuildRefinery();
+	const Unit* FindNearestGas(const Point2D& start);
+	bool TryBuildStructure(AbilityID ability_type_for_structure, UnitTypeID unit_type, Tag location_tag);
 	//
     bool TryBuildBasePylon();
     // Tries to find a random location that can be pathed to on the map.
@@ -95,7 +98,6 @@ private:
     bool FindEnemyPosition(Tag tag, Point2D& target_pos);
     const Unit *GetAvailableWorkerUnit();
     Tag GetAvailableWorker();
-    bool TryBuildStructure(AbilityID ability_type_for_structure, UnitTypeID unit_type, Tag location_tag);
     bool FindNearestGeaser(const Point2D &start, uint64_t& target, float MaxDistance);
     size_t CountUnitType(const ObservationInterface * observation, UnitTypeID unit_type);
     void EconStrat(const ObservationInterface *observation);

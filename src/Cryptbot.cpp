@@ -898,14 +898,16 @@ void CryptBot::OnUnitIdle(const Unit *unit) {
 		    break;
 		}
 		case UNIT_TYPEID::TERRAN_BARRACKS: {
+			Actions()->UnitCommand(unit, ABILITY_ID::BUILD_REACTOR);
+			Actions()->UnitCommand(unit, ABILITY_ID::TRAIN_MARINE);
 			Actions()->UnitCommand(unit, ABILITY_ID::TRAIN_MARINE);
 			break;
 		}
-		case UNIT_TYPEID::TERRAN_MARINE: {
+		/*case UNIT_TYPEID::TERRAN_MARINE: {
 			const GameInfo& game_info = Observation()->GetGameInfo();
 			Actions()->UnitCommand(unit, ABILITY_ID::ATTACK_ATTACK, game_info.enemy_start_locations.front());
 			break;
-		}
+		}*/
 		default: {
 			break;
 		}		
@@ -927,7 +929,21 @@ const Unit* CryptBot::FindNearestMineralPatchTuto(const Point2D& start) {
 	}
 	return target;
 }
-
+const Unit* CryptBot::FindNearestGas(const Point2D& start) {
+	Units units = Observation()->GetUnits(Unit::Alliance::Neutral);
+	float distance = std::numeric_limits<float>::max();
+	const Unit* target = nullptr;
+	for (const auto& u : units) {
+		if (u->unit_type == UNIT_TYPEID::NEUTRAL_VESPENEGEYSER) {
+			float d = DistanceSquared2D(u->pos, start);
+			if (d < distance) {
+				distance = d;
+				target = u;
+			}
+		}
+	}
+	return target;
+}
 
 bool CryptBot::BuildAvailableGeaser(AbilityID build_ability, UnitTypeID worker_type, Point2D base_location)
 {
@@ -1164,6 +1180,7 @@ void CryptBot::OnStep() {
 
 	TryBuildSupplyDepot();
 	TryBuildBarracks();
+	TryBuildRefinery();
 
 	//Throttle some behavior that can wait to avoid duplicate orders.
 	/*int frames_to_skip = 4;
@@ -1249,9 +1266,23 @@ bool CryptBot::TryBuildStructureTuto(ABILITY_ID ability_type_for_structure, UNIT
 	float rx = GetRandomScalar();
 	float ry = GetRandomScalar();
 
-	Actions()->UnitCommand(unit_to_build,
-		ability_type_for_structure,
-		Point2D(unit_to_build->pos.x + rx * 15.0f, unit_to_build->pos.y + ry * 15.0f));
+	if (ability_type_for_structure == ABILITY_ID::BUILD_REFINERY) {
+		Units bases = observation->GetUnits(Unit::Alliance::Self, IsTownHall());
+		/*Point2D start = bases[0]->pos;
+		//Point2D start = Observation()->GetStartLocation();
+		const Unit* gas_target = FindNearestGas(start);
+		Actions()->UnitCommand(unit_to_build, ability_type_for_structure, gas_target);*/
+		for (const auto& base : bases)
+		{
+			BuildAvailableGeaser(ABILITY_ID::BUILD_REFINERY, UNIT_TYPEID::TERRAN_SCV, base->pos);
+
+		}
+	}
+	else {
+		Actions()->UnitCommand(unit_to_build,
+			ability_type_for_structure,
+			Point2D(unit_to_build->pos.x + rx * 15.0f, unit_to_build->pos.y + ry * 15.0f));
+	}
 
 	return true;
 }
@@ -1271,16 +1302,20 @@ size_t CryptBot::CountUnitType(UNIT_TYPEID unit_type) {
 	return Observation()->GetUnits(Unit::Alliance::Self, IsUnit(unit_type)).size();
 }
 
-// Construit une seule caserne
+
 bool CryptBot::TryBuildBarracks() {
 	const ObservationInterface* observation = Observation();
 	if (CountUnitType(UNIT_TYPEID::TERRAN_SUPPLYDEPOT) < 1) {
 		return false;
 	}
-	if (CountUnitType(UNIT_TYPEID::TERRAN_BARRACKS) > 0) {
+	return TryBuildStructureTuto(ABILITY_ID::BUILD_BARRACKS);
+}
+bool CryptBot::TryBuildRefinery() {
+	const ObservationInterface* observation = Observation();
+	if (CountUnitType(UNIT_TYPEID::TERRAN_REFINERY) >= 1) {
 		return false;
 	}
-	return TryBuildStructureTuto(ABILITY_ID::BUILD_BARRACKS);
+	return TryBuildStructureTuto(ABILITY_ID::BUILD_REFINERY);
 }
 
 void CryptBot::TryBuildArmy(const ObservationInterface* observation)
