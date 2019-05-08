@@ -1212,6 +1212,7 @@ void CryptBot::OnStep() {
 	{
 		return;
 	}
+	const GameInfo& game_info = Observation()->GetGameInfo();
 
 	TryBuildSupplyDepot();
 	TryBuildRefinery();
@@ -1221,7 +1222,11 @@ void CryptBot::OnStep() {
 	else if (CountUnitType(UNIT_TYPEID::TERRAN_FACTORY) < 1) {
 		TryBuildFactory();
 	}
-	
+
+	if (CountUnitType(UNIT_TYPEID::TERRAN_MARINE) == 40) {
+		Units marines = observation->GetUnits(Unit::Alliance::Self, IsUnit(UNIT_TYPEID::TERRAN_MARINE));	
+		Actions()->UnitCommand(marines, ABILITY_ID::ATTACK_ATTACK, game_info.enemy_start_locations.front());
+	}
 
 	//Throttle some behavior that can wait to avoid duplicate orders.
 	/*int frames_to_skip = 4;
