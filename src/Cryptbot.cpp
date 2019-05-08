@@ -883,7 +883,7 @@ int64_t CryptBot::FindNearestUnit(const Point2D& start, Units UnitSet, ATTACK_TY
 void CryptBot::OnUnitIdle(const Unit *unit) {
 	switch (unit->unit_type.ToType()) {
 		case UNIT_TYPEID::TERRAN_COMMANDCENTER: {
-			if (CountUnitType(UNIT_TYPEID::TERRAN_SCV) <= 16) {
+			if (unit->assigned_harvesters != unit->ideal_harvesters) {
 				Actions()->UnitCommand(unit, ABILITY_ID::TRAIN_SCV);
 				break;
 			}
@@ -897,8 +897,8 @@ void CryptBot::OnUnitIdle(const Unit *unit) {
 		   if (!mineral_target) {
 			   break;
 		   }
-		   Actions()->UnitCommand(unit, ABILITY_ID::SMART, mineral_target);
-		    break;
+		   Actions()->UnitCommand(unit, ABILITY_ID::HARVEST_GATHER, mineral_target);
+		   break;
 		}
 		case UNIT_TYPEID::TERRAN_BARRACKS: {
 			if (CountUnitType(UNIT_TYPEID::TERRAN_BARRACKSTECHLAB) == 0) {
