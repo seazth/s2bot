@@ -886,11 +886,36 @@ void CryptBot::OnUnitIdle(const Unit *unit) {
 			Actions()->UnitCommand(unit, ABILITY_ID::TRAIN_SCV);
 			break;
 		}
+		case UNIT_TYPEID::TERRAN_SCV: {
+		   const Unit* mineral_target = FindNearestMineralPatchTuto(unit->pos);
+		   if (!mineral_target) {
+			   break;
+		   }		
+		    Actions()->UnitCommand(unit, ABILITY_ID::SMART, mineral_target);
+		    break;
+		}
 		default: {
 			break;
 		}		
 	}
 }
+
+const Unit* CryptBot::FindNearestMineralPatchTuto(const Point2D& start) {
+	Units units = Observation()->GetUnits(Unit::Alliance::Neutral);
+	float distance = std::numeric_limits<float>::max();
+	const Unit* target = nullptr;
+	for (const auto& u : units) {
+		if (u->unit_type == UNIT_TYPEID::NEUTRAL_MINERALFIELD) {
+			float d = DistanceSquared2D(u->pos, start);
+			if (d < distance) {
+                distance = d;
+				target = u;
+			}
+		}
+	}
+	return target;
+}
+
 
 bool CryptBot::BuildAvailableGeaser(AbilityID build_ability, UnitTypeID worker_type, Point2D base_location)
 {
