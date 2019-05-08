@@ -1179,8 +1179,11 @@ void CryptBot::OnStep() {
 	}
 
 	TryBuildSupplyDepot();
-	TryBuildBarracks();
 	TryBuildRefinery();
+	if (CountUnitType(UNIT_TYPEID::TERRAN_BARRACKS) < 5) {
+		TryBuildBarracks();
+	}
+	
 
 	//Throttle some behavior that can wait to avoid duplicate orders.
 	/*int frames_to_skip = 4;
@@ -1275,7 +1278,6 @@ bool CryptBot::TryBuildStructureTuto(ABILITY_ID ability_type_for_structure, UNIT
 		for (const auto& base : bases)
 		{
 			BuildAvailableGeaser(ABILITY_ID::BUILD_REFINERY, UNIT_TYPEID::TERRAN_SCV, base->pos);
-
 		}
 	}
 	else {
@@ -1305,14 +1307,14 @@ size_t CryptBot::CountUnitType(UNIT_TYPEID unit_type) {
 
 bool CryptBot::TryBuildBarracks() {
 	const ObservationInterface* observation = Observation();
-	if (CountUnitType(UNIT_TYPEID::TERRAN_SUPPLYDEPOT) < 1) {
+	if (CountUnitType(UNIT_TYPEID::TERRAN_SUPPLYDEPOT) < 1 || observation->GetMinerals() < 150) {
 		return false;
 	}
 	return TryBuildStructureTuto(ABILITY_ID::BUILD_BARRACKS);
 }
 bool CryptBot::TryBuildRefinery() {
 	const ObservationInterface* observation = Observation();
-	if (CountUnitType(UNIT_TYPEID::TERRAN_REFINERY) >= 1) {
+	if (CountUnitType(UNIT_TYPEID::TERRAN_REFINERY) >= 2 || observation->GetMinerals() < 75) {
 		return false;
 	}
 	return TryBuildStructureTuto(ABILITY_ID::BUILD_REFINERY);
