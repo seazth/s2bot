@@ -11,12 +11,13 @@ Optimisation du code / réutilisation (structure de l'IA, briques) : 5pts
 Place dans le tournoi : 4pts
 
 ## Build Order
-Centre de commandement => SCV
+- Centre de commandement => SCV
 
 - 1 dépot de ravitaillement > caserne => réacteur => double marines
-                            > raffinerie
 
-Centre de commandement => station orbitale
+-                           > raffinerie
+
+- Centre de commandement => station orbitale
 
 - dépots > caserne (~5) => réacteurs => marines
 
