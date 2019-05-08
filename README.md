@@ -13,16 +13,15 @@ Place dans le tournoi : 4pts
 ## Build Order
 Centre de commandement => SCV
 
->> 1 dépot de ravitaillement > caserne => réacteur => double marines
-
-                              > raffinerie
+- 1 dépot de ravitaillement > caserne => réacteur => double marines
+                            > raffinerie
 
 Centre de commandement => station orbitale
 
->> dépots > caserne (~5) => réacteurs => marines
+- dépots > caserne (~5) => réacteurs => marines
 
-1 caserne => laboratoire technique => bouclier de combat
+- 1 caserne => laboratoire technique => bouclier de combat
 
->> dépot + marine (EN BOUCLE)
+- dépot + marine (EN BOUCLE)
 
->> 1 usine > char de siège (mode siège pour attaquer)
+- 1 usine > char de siège (mode siège pour attaquer)
