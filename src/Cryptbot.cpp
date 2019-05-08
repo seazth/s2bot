@@ -894,6 +894,15 @@ void CryptBot::OnUnitIdle(const Unit *unit) {
 		    Actions()->UnitCommand(unit, ABILITY_ID::SMART, mineral_target);
 		    break;
 		}
+		case UNIT_TYPEID::TERRAN_BARRACKS: {
+			Actions()->UnitCommand(unit, ABILITY_ID::TRAIN_MARINE);
+			break;
+		}
+		case UNIT_TYPEID::TERRAN_MARINE: {
+			const GameInfo& game_info = Observation()->GetGameInfo();
+			Actions()->UnitCommand(unit, ABILITY_ID::ATTACK_ATTACK, game_info.enemy_start_locations.front());
+			break;
+		}
 		default: {
 			break;
 		}		
@@ -1151,6 +1160,7 @@ void CryptBot::OnStep() {
 	}
 
 	TryBuildSupplyDepot();
+	TryBuildBarracks();
 
 	//Throttle some behavior that can wait to avoid duplicate orders.
 	/*int frames_to_skip = 4;
@@ -1252,6 +1262,22 @@ bool CryptBot::TryBuildSupplyDepot() {
 
 	// Try and build a depot. Find a random SCV and give it the order.
 	return TryBuildStructureTuto(ABILITY_ID::BUILD_SUPPLYDEPOT);
+}
+
+size_t CryptBot::CountUnitType(UNIT_TYPEID unit_type) {
+	return Observation()->GetUnits(Unit::Alliance::Self, IsUnit(unit_type)).size();
+}
+
+// Construit une seule caserne
+bool CryptBot::TryBuildBarracks() {
+	const ObservationInterface* observation = Observation();
+	if (CountUnitType(UNIT_TYPEID::TERRAN_SUPPLYDEPOT) < 1) {
+		return false;
+	}
+	if (CountUnitType(UNIT_TYPEID::TERRAN_BARRACKS) > 0) {
+		return false;
+	}
+	return TryBuildStructureTuto(ABILITY_ID::BUILD_BARRACKS);
 }
 
 void CryptBot::TryBuildArmy(const ObservationInterface* observation)
