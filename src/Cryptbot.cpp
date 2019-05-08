@@ -4,6 +4,8 @@
 #include "sc2api/sc2_api.h"
 #include "Strategys.h"
 
+using namespace std;
+
 struct IsAttackable {
 	bool operator()(const Unit& unit) {
 		switch (unit.unit_type.ToType()) {
@@ -1174,6 +1176,7 @@ void CryptBot::CheckScouting(const ObservationInterface *observation)
 	}
 }
 
+bool flag = true;
 void CryptBot::OnStep() {
 	const ObservationInterface* observation = Observation();
 	if (!observation)
@@ -1187,6 +1190,17 @@ void CryptBot::OnStep() {
 		TryBuildBarracks();
 	}
 	
+	//std::cout << "army count : " << observation->GetArmyCount() << std::endl;
+	/*Units units = observation->GetUnits(Unit::Alliance::Self, IsUnit(UNIT_TYPEID::TERRAN_MARINE));
+	if (observation->GetArmyCount() == 6 && flag == true) {
+		flag = false;
+		auto game_info = observation->GetGameInfo();
+		cout << "start x: " << game_info.start_locations.back().x << " - y: " << game_info.start_locations.back().y << endl;
+		Actions()->UnitCommand(units[0], ABILITY_ID::ATTACK_ATTACK, game_info.enemy_start_locations.front());
+		for (int i = 0; i < 3; i++) {
+			
+		}
+	}*/
 
 	//Throttle some behavior that can wait to avoid duplicate orders.
 	/*int frames_to_skip = 4;
@@ -1268,9 +1282,19 @@ bool CryptBot::TryBuildStructureTuto(ABILITY_ID ability_type_for_structure, UNIT
 			unit_to_build = unit;
 		}
 	}
-
-	float rx = GetRandomScalar();
-	float ry = GetRandomScalar();
+	float rx, ry = 0.0f;
+	float scaleX, scaleY = 0.0f;
+	if (Observation()->GetGameInfo().start_locations.front().x < 30) {
+		rx = -GetRandomFraction();//GetRandomScalar();
+		ry = -GetRandomFraction();//GetRandomScalar();
+		scaleX = GetRandomInteger(30,45on); //25.0f;
+		scaleY = GetRandomInteger(40, 60);//30.0f;
+	} else {
+		rx = GetRandomFraction();//GetRandomScalar();
+		ry = GetRandomFraction();//GetRandomScalar();
+		scaleX = GetRandomInteger(30, 45);//25.0f;
+		scaleY = GetRandomInteger(40, 60);//35.0f;
+	}
 
 	if (ability_type_for_structure == ABILITY_ID::BUILD_REFINERY) {
 		Units bases = observation->GetUnits(Unit::Alliance::Self, IsTownHall());
@@ -1284,9 +1308,10 @@ bool CryptBot::TryBuildStructureTuto(ABILITY_ID ability_type_for_structure, UNIT
 		}
 	}
 	else {
+		if(ability_type_for_structure == ABILITY_ID::BUILD_BARRACKS) cout << "x : " << unit_to_build->pos.x + rx * 15.0f << " - y: " << unit_to_build->pos.y + ry * 15.0f << endl;
 		Actions()->UnitCommand(unit_to_build,
 			ability_type_for_structure,
-			Point2D(unit_to_build->pos.x + rx * 15.0f, unit_to_build->pos.y + ry * 15.0f));
+			Point2D(unit_to_build->pos.x + rx * scaleX, unit_to_build->pos.y + ry * scaleY));
 	}
 
 	return true;
