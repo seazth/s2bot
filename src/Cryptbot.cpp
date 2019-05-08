@@ -885,27 +885,59 @@ int64_t CryptBot::FindNearestUnit(const Point2D& start, Units UnitSet, ATTACK_TY
 void CryptBot::OnUnitIdle(const Unit *unit) {
 	switch (unit->unit_type.ToType()) {
 		case UNIT_TYPEID::TERRAN_COMMANDCENTER: {
-			if (CountUnitType(UNIT_TYPEID::TERRAN_SCV) <= 16) {
+			if (unit->assigned_harvesters < unit->ideal_harvesters) {
 				Actions()->UnitCommand(unit, ABILITY_ID::TRAIN_SCV);
-				break;
 			}
 			else if (Observation()->GetMinerals() >= 150){
 				Actions()->UnitCommand(unit, ABILITY_ID::MORPH_ORBITALCOMMAND);
 			}
 			break;
 		}
+		case UNIT_TYPEID::TERRAN_ORBITALCOMMAND: {
+			if (unit->assigned_harvesters < unit->ideal_harvesters) {
+				Actions()->UnitCommand(unit, ABILITY_ID::TRAIN_SCV);
+			}
+		}
 		case UNIT_TYPEID::TERRAN_SCV: {
-		   const Unit* mineral_target = FindNearestMineralPatchTuto(unit->pos);
-		   if (!mineral_target) {
-			   break;
-		   }		
-		    Actions()->UnitCommand(unit, ABILITY_ID::SMART, mineral_target);
-		    break;
+			const Unit* mineral_target = FindNearestMineralPatchTuto(unit->pos);
+			Units bases = Observation()->GetUnits(Unit::Alliance::Self, IsTownHall());
+			Units NearbyGeasers = Observation()->GetUnits(Unit::Alliance::Self, IsUnit(UNIT_TYPEID::TERRAN_REFINERY));
+
+			if (!mineral_target) {
+				break;
+			}
+			for (const auto& geyser : NearbyGeasers) {
+				if (geyser->assigned_harvesters < geyser->ideal_harvesters) {
+					Actions()->UnitCommand(unit, ABILITY_ID::HARVEST_GATHER, geyser);
+					break;
+				}
+				else {
+					Actions()->UnitCommand(unit, ABILITY_ID::HARVEST_GATHER, mineral_target);
+					break;
+				}
+			}
+			break;
 		}
 		case UNIT_TYPEID::TERRAN_BARRACKS: {
-			Actions()->UnitCommand(unit, ABILITY_ID::BUILD_REACTOR);
-			Actions()->UnitCommand(unit, ABILITY_ID::TRAIN_MARINE);
-			Actions()->UnitCommand(unit, ABILITY_ID::TRAIN_MARINE);
+			if (CountUnitType(UNIT_TYPEID::TERRAN_BARRACKSTECHLAB) == 0) {
+				Actions()->UnitCommand(unit, ABILITY_ID::BUILD_TECHLAB_BARRACKS);
+			}
+			else {
+				Actions()->UnitCommand(unit, ABILITY_ID::BUILD_REACTOR);
+				Actions()->UnitCommand(unit, ABILITY_ID::TRAIN_MARINE);
+				Actions()->UnitCommand(unit, ABILITY_ID::TRAIN_MARINE);
+			}	
+			break;
+		}
+		case UNIT_TYPEID::TERRAN_BARRACKSTECHLAB: {
+			Actions()->UnitCommand(unit, ABILITY_ID::RESEARCH_COMBATSHIELD);
+			break;
+		}
+		case UNIT_TYPEID::TERRAN_FACTORY: {
+			if (CountUnitType(UNIT_TYPEID::TERRAN_FACTORYTECHLAB) == 0) {
+				Actions()->UnitCommand(unit, ABILITY_ID::BUILD_TECHLAB);
+			}
+			Actions()->UnitCommand(unit, ABILITY_ID::TRAIN_SIEGETANK);
 			break;
 		}
 		/*case UNIT_TYPEID::TERRAN_MARINE: {
@@ -1183,6 +1215,7 @@ void CryptBot::OnStep() {
 	{
 		return;
 	}
+	const GameInfo& game_info = Observation()->GetGameInfo();
 
 	TryBuildSupplyDepot();
 	TryBuildRefinery();
@@ -1201,6 +1234,15 @@ void CryptBot::OnStep() {
 			
 		}
 	}*/
+
+	else if (CountUnitType(UNIT_TYPEID::TERRAN_FACTORY) < 1) {
+		TryBuildFactory();
+	}
+
+	if (CountUnitType(UNIT_TYPEID::TERRAN_MARINE) == 40) {
+		Units marines = observation->GetUnits(Unit::Alliance::Self, IsUnit(UNIT_TYPEID::TERRAN_MARINE));	
+		Actions()->UnitCommand(marines, ABILITY_ID::ATTACK_ATTACK, game_info.enemy_start_locations.front());
+	}
 
 	//Throttle some behavior that can wait to avoid duplicate orders.
 	/*int frames_to_skip = 4;
@@ -1287,7 +1329,7 @@ bool CryptBot::TryBuildStructureTuto(ABILITY_ID ability_type_for_structure, UNIT
 	if (Observation()->GetGameInfo().start_locations.front().x < 30) {
 		rx = -GetRandomFraction();//GetRandomScalar();
 		ry = -GetRandomFraction();//GetRandomScalar();
-		scaleX = GetRandomInteger(30,45on); //25.0f;
+		scaleX = GetRandomInteger(30,45); //25.0f;
 		scaleY = GetRandomInteger(40, 60);//30.0f;
 	} else {
 		rx = GetRandomFraction();//GetRandomScalar();
@@ -1346,6 +1388,12 @@ bool CryptBot::TryBuildRefinery() {
 		return false;
 	}
 	return TryBuildStructureTuto(ABILITY_ID::BUILD_REFINERY);
+}
+bool CryptBot::TryBuildFactory() {
+	if (Observation()->GetMinerals() < 150 && Observation()->GetVespene() < 100) {
+		return false;
+	}
+	return TryBuildStructureTuto(ABILITY_ID::BUILD_FACTORY);
 }
 
 void CryptBot::TryBuildArmy(const ObservationInterface* observation)
