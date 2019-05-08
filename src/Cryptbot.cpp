@@ -883,22 +883,38 @@ int64_t CryptBot::FindNearestUnit(const Point2D& start, Units UnitSet, ATTACK_TY
 void CryptBot::OnUnitIdle(const Unit *unit) {
 	switch (unit->unit_type.ToType()) {
 		case UNIT_TYPEID::TERRAN_COMMANDCENTER: {
-			if (unit->assigned_harvesters != unit->ideal_harvesters) {
+			if (unit->assigned_harvesters < unit->ideal_harvesters) {
 				Actions()->UnitCommand(unit, ABILITY_ID::TRAIN_SCV);
-				break;
 			}
-			else if (Observation()->GetMinerals() >= 150 && CountUnitType(UNIT_TYPEID::TERRAN_ORBITALCOMMAND) == 0){
+			else if (Observation()->GetMinerals() >= 150){
 				Actions()->UnitCommand(unit, ABILITY_ID::MORPH_ORBITALCOMMAND);
 			}
 			break;
 		}
+		case UNIT_TYPEID::TERRAN_ORBITALCOMMAND: {
+			if (unit->assigned_harvesters < unit->ideal_harvesters) {
+				Actions()->UnitCommand(unit, ABILITY_ID::TRAIN_SCV);
+			}
+		}
 		case UNIT_TYPEID::TERRAN_SCV: {
-		   const Unit* mineral_target = FindNearestMineralPatchTuto(unit->pos);
-		   if (!mineral_target) {
-			   break;
-		   }
-		   Actions()->UnitCommand(unit, ABILITY_ID::HARVEST_GATHER, mineral_target);
-		   break;
+			const Unit* mineral_target = FindNearestMineralPatchTuto(unit->pos);
+			Units bases = Observation()->GetUnits(Unit::Alliance::Self, IsTownHall());
+			Units NearbyGeasers = Observation()->GetUnits(Unit::Alliance::Self, IsUnit(UNIT_TYPEID::TERRAN_REFINERY));
+
+			if (!mineral_target) {
+				break;
+			}
+			for (const auto& geyser : NearbyGeasers) {
+				if (geyser->assigned_harvesters < geyser->ideal_harvesters) {
+					Actions()->UnitCommand(unit, ABILITY_ID::HARVEST_GATHER, geyser);
+					break;
+				}
+				else {
+					Actions()->UnitCommand(unit, ABILITY_ID::HARVEST_GATHER, mineral_target);
+					break;
+				}
+			}
+			break;
 		}
 		case UNIT_TYPEID::TERRAN_BARRACKS: {
 			if (CountUnitType(UNIT_TYPEID::TERRAN_BARRACKSTECHLAB) == 0) {
