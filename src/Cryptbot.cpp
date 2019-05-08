@@ -887,7 +887,7 @@ void CryptBot::OnUnitIdle(const Unit *unit) {
 				Actions()->UnitCommand(unit, ABILITY_ID::TRAIN_SCV);
 				break;
 			}
-			else if (Observation()->GetMinerals() >= 150){
+			else if (Observation()->GetMinerals() >= 150 && CountUnitType(UNIT_TYPEID::TERRAN_ORBITALCOMMAND) == 0){
 				Actions()->UnitCommand(unit, ABILITY_ID::MORPH_ORBITALCOMMAND);
 			}
 			break;
