@@ -520,7 +520,13 @@ bool FANbot::TryBuildStructure(ABILITY_ID ability_type_for_structure, UNIT_TYPEI
 			BuildAvailableGeaser(ABILITY_ID::BUILD_REFINERY, UNIT_TYPEID::TERRAN_SCV, base->pos);
 		}
 	}
-	else {
+	else if (ability_type_for_structure == ABILITY_ID::BUILD_REFINERY) {
+		rx = GetRandomScalar();
+		ry = GetRandomScalar();
+		Actions()->UnitCommand(unit_to_build,
+			ability_type_for_structure,
+			Point2D(unit_to_build->pos.x + rx * 15.0f, unit_to_build->pos.y + ry * 15.0f));
+	} else {
 		//if (ability_type_for_structure == ABILITY_ID::BUILD_BARRACKS) cout << "x : " << unit_to_build->pos.x + rx * 15.0f << " - y: " << unit_to_build->pos.y + ry * 15.0f << endl;
 		Actions()->UnitCommand(unit_to_build,
 			ability_type_for_structure,

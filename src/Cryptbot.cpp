@@ -1350,7 +1350,6 @@ bool CryptBot::TryBuildStructureTuto(ABILITY_ID ability_type_for_structure, UNIT
 		}
 	}
 	else {
-		if(ability_type_for_structure == ABILITY_ID::BUILD_BARRACKS) cout << "x : " << unit_to_build->pos.x + rx * 15.0f << " - y: " << unit_to_build->pos.y + ry * 15.0f << endl;
 		Actions()->UnitCommand(unit_to_build,
 			ability_type_for_structure,
 			Point2D(unit_to_build->pos.x + rx * scaleX, unit_to_build->pos.y + ry * scaleY));
