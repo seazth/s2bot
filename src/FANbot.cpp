@@ -380,7 +380,9 @@ void FANbot::OnStep() {
 	const GameInfo& game_info = Observation()->GetGameInfo();
 
 	TryBuildSupplyDepot();
-	TryBuildRefinery();
+	if (CountUnitType(UNIT_TYPEID::TERRAN_REFINERY) < 2) {
+		TryBuildRefinery();
+	}
 	if (CountUnitType(UNIT_TYPEID::TERRAN_BARRACKS) < 5) {
 		TryBuildBarracks();
 	}
@@ -559,7 +561,7 @@ bool FANbot::TryBuildBarracks() {
 }
 bool FANbot::TryBuildRefinery() {
 	const ObservationInterface* observation = Observation();
-	if (CountUnitType(UNIT_TYPEID::TERRAN_REFINERY) >= 2 || observation->GetMinerals() < 75) {
+	if (observation->GetMinerals() < 75) {
 		return false;
 	}
 	return TryBuildStructure(ABILITY_ID::BUILD_REFINERY);
