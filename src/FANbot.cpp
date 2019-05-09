@@ -413,7 +413,7 @@ void FANbot::OnUnitIdle(const Unit *unit) {
 			}
 		}
 		case UNIT_TYPEID::TERRAN_SCV: {
-			const Unit* mineral_target = FindNearestMineralPatch(unit->pos);
+			const Unit* mineral_target = FindNearestMineralPatch(*StartPosition);
 			Units bases = Observation()->GetUnits(Unit::Alliance::Self, IsTownHall());
 			Units AllGeasers = Observation()->GetUnits(Unit::Alliance::Self, IsUnit(UNIT_TYPEID::TERRAN_REFINERY));
 
