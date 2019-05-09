@@ -134,10 +134,12 @@
   <ItemGroup>
     <ClCompile Include="Cryptbot.cpp" />
     <ClCompile Include="CryptbotMain.cpp" />
+    <ClCompile Include="FANbot.cpp" />
     <ClCompile Include="Strategys.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Cryptbot.h" />
+    <ClInclude Include="FANbot.h" />
     <ClInclude Include="LadderInterface.h" />
     <ClInclude Include="Strategys.h" />
   </ItemGroup>

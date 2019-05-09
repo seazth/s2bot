@@ -5,12 +5,13 @@
 #include "sc2utils/sc2_arg_parser.h"
 
 #include "Cryptbot.h"
+#include "FANbot.h"
 #include "LadderInterface.h"
 
 #ifdef DEBUG
 int main(int argc, char* argv[])
 {
-	CryptBot bot;
+	CryptBot bot; FANbot myBot;
 	sc2::Coordinator coordinator;
 	if (!coordinator.LoadSettings(argc, argv))
 	{
@@ -21,7 +22,7 @@ int main(int argc, char* argv[])
 	coordinator.SetRealtime(false);
 	coordinator.SetMultithreaded(true);
 	coordinator.SetParticipants({
-		CreateParticipant(sc2::Race::Terran, &bot),
+		CreateParticipant(sc2::Race::Terran, &bot), //CreateParticipant(sc2::Race::Terran, &myBot),
 		//sc2::PlayerSetup(sc2::PlayerType::Observer,Util::GetRaceFromString(enemyRaceString)),
 		CreateComputer(sc2::Race::Protoss, sc2::Difficulty::Easy)
 	});
