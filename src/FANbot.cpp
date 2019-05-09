@@ -419,13 +419,11 @@ void FANbot::OnUnitIdle(const Unit *unit) {
 				break;
 			}
 			for (const auto& geyser : AllGeasers) {
-				if (geyser->assigned_harvesters < geyser->ideal_harvesters) {
+				if (geyser->assigned_harvesters <= geyser->ideal_harvesters - 1) {
 					Actions()->UnitCommand(unit, ABILITY_ID::HARVEST_GATHER, geyser);
-					break;
 				}
 				else {
 					Actions()->UnitCommand(unit, ABILITY_ID::HARVEST_GATHER, mineral_target);
-					break;
 				}
 			}
 			break;
