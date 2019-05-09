@@ -561,7 +561,7 @@ bool FANbot::TryBuildBarracks() {
 }
 bool FANbot::TryBuildRefinery() {
 	const ObservationInterface* observation = Observation();
-	if (observation->GetMinerals() < 75) {
+	if (CountUnitType(UNIT_TYPEID::TERRAN_SUPPLYDEPOT) < 1 || observation->GetMinerals() < 75) {
 		return false;
 	}
 	return TryBuildStructure(ABILITY_ID::BUILD_REFINERY);
