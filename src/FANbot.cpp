@@ -373,11 +373,8 @@ void FANbot::SetupRushLocation(const ObservationInterface *observation)
 
 void FANbot::OnStep() {
 	const ObservationInterface* observation = Observation();
-	if (!observation)
-	{
-		return;
-	}
-	const GameInfo& game_info = Observation()->GetGameInfo();
+	if (!observation) { return; }
+	const GameInfo& game_info = observation->GetGameInfo();
 
 	TryBuildSupplyDepot();
 	if (CountUnitType(UNIT_TYPEID::TERRAN_REFINERY) < 2) {
@@ -537,10 +534,8 @@ bool FANbot::TryBuildStructure(ABILITY_ID ability_type_for_structure, UNIT_TYPEI
 }
 
 bool FANbot::TryBuildSupplyDepot() {
-	const ObservationInterface* observation = Observation();
-
 	// If we are not supply capped, don't build a supply depot.
-	if (observation->GetFoodUsed() <= observation->GetFoodCap() - 2)
+	if (Observation()->GetFoodUsed() <= Observation()->GetFoodCap() - 2)
 		return false;
 
 	// Try and build a depot. Find a random SCV and give it the order.
@@ -553,15 +548,13 @@ size_t FANbot::CountUnitType(UNIT_TYPEID unit_type) {
 
 
 bool FANbot::TryBuildBarracks() {
-	const ObservationInterface* observation = Observation();
-	if (CountUnitType(UNIT_TYPEID::TERRAN_SUPPLYDEPOT) < 1 || observation->GetMinerals() < 150) {
+	if (CountUnitType(UNIT_TYPEID::TERRAN_SUPPLYDEPOT) < 1 || Observation()->GetMinerals() < 150) {
 		return false;
 	}
 	return TryBuildStructure(ABILITY_ID::BUILD_BARRACKS);
 }
 bool FANbot::TryBuildRefinery() {
-	const ObservationInterface* observation = Observation();
-	if (CountUnitType(UNIT_TYPEID::TERRAN_SUPPLYDEPOT) < 1 || observation->GetMinerals() < 75) {
+	if (CountUnitType(UNIT_TYPEID::TERRAN_SUPPLYDEPOT) < 1 || Observation()->GetMinerals() < 75) {
 		return false;
 	}
 	return TryBuildStructure(ABILITY_ID::BUILD_REFINERY);
