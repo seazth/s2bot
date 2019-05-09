@@ -520,7 +520,7 @@ bool FANbot::TryBuildStructure(ABILITY_ID ability_type_for_structure, UNIT_TYPEI
 			BuildAvailableGeaser(ABILITY_ID::BUILD_REFINERY, UNIT_TYPEID::TERRAN_SCV, base->pos);
 		}
 	}
-	else if (ability_type_for_structure == ABILITY_ID::BUILD_REFINERY) {
+	else if (ability_type_for_structure == ABILITY_ID::BUILD_SUPPLYDEPOT) {
 		rx = GetRandomScalar();
 		ry = GetRandomScalar();
 		Actions()->UnitCommand(unit_to_build,
