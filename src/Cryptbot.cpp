@@ -1327,13 +1327,13 @@ bool CryptBot::TryBuildStructureTuto(ABILITY_ID ability_type_for_structure, UNIT
 	float rx, ry = 0.0f;
 	float scaleX, scaleY = 0.0f;
 	if (Observation()->GetGameInfo().start_locations.front().x < 30) {
-		rx = -GetRandomFraction();//GetRandomScalar();
-		ry = -GetRandomFraction();//GetRandomScalar();
+		rx = CountUnitType(UNIT_TYPEID::TERRAN_BARRACKS) % 2 == 0 ? GetRandomFraction() : -GetRandomFraction();//GetRandomScalar();
+		ry = CountUnitType(UNIT_TYPEID::TERRAN_BARRACKS) % 2 == 0 ? GetRandomFraction() : -GetRandomFraction();//GetRandomScalar();
 		scaleX = GetRandomInteger(30,45); //25.0f;
 		scaleY = GetRandomInteger(40, 60);//30.0f;
 	} else {
-		rx = GetRandomFraction();//GetRandomScalar();
-		ry = GetRandomFraction();//GetRandomScalar();
+		rx = CountUnitType(UNIT_TYPEID::TERRAN_BARRACKS) % 2 == 0 ? -GetRandomFraction() : GetRandomFraction();//GetRandomScalar();
+		ry = CountUnitType(UNIT_TYPEID::TERRAN_BARRACKS) % 2 == 0 ? -GetRandomFraction() : GetRandomFraction();//GetRandomScalar();
 		scaleX = GetRandomInteger(30, 45);//25.0f;
 		scaleY = GetRandomInteger(40, 60);//35.0f;
 	}
