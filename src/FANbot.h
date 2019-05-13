@@ -26,6 +26,7 @@ public:
 private:
 	sc2::Point3D *StartPosition;
 	sc2::Point2D RushLocation;
+	std::vector<Point3D> expansions_; // toutes les cases du terrain
 	void SetupRushLocation(const ObservationInterface *observation);
 	GameInfo *game_info_;
 	sc2::Race OpponentRace;
@@ -38,6 +39,7 @@ private:
 	bool TryBuildRefinery();
 	bool TryBuildStructureByTag(AbilityID ability_type_for_structure, UnitTypeID unit_type, Tag location_tag);
 	bool TryBuildFactory();
+	void TryToExpand(const Unit* unit);
 
 	std::vector<const sc2::Unit *> defenders;
 	std::vector<const sc2::Unit *> attackers;

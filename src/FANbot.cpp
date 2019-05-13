@@ -284,6 +284,7 @@ FANbot::FANbot() {
 void FANbot::OnGameStart() {
 	SetupRushLocation(Observation());
 	Actions()->SendChat("gl hf !");
+	expansions_ = search::CalculateExpansionLocations(Observation(), Query());
 
 	const Units NewUnits = Observation()->GetUnits();
 	for (auto &u : NewUnits)
@@ -378,6 +379,7 @@ void FANbot::OnStep() {
 	const GameInfo& game_info = observation->GetGameInfo();
 
 	cout << "unit count : " << CountUnitType(UNIT_TYPEID::TERRAN_MARINE) << " attackers count : " << attackers.size() << " defenders count : " << defenders.size() << endl;
+	//cout << "unit count : " << CountUnitType(UNIT_TYPEID::TERRAN_MARINE) << " attackers count : " << attackers.size() << endl;
 
 	TryBuildSupplyDepot();
 	if (CountUnitType(UNIT_TYPEID::TERRAN_REFINERY) < 2) {
@@ -392,10 +394,11 @@ void FANbot::OnStep() {
 
 	//observation->GetUnits(Unit::Alliance::Self, IsUnit(UNIT_TYPEID::TERRAN_SIEGETANK))[0];
 	
-	if    ((CountUnitType(UNIT_TYPEID::TERRAN_MARINE) > 50 && CountUnitType(UNIT_TYPEID::TERRAN_SIEGETANK) >= 2) 
+	if ((CountUnitType(UNIT_TYPEID::TERRAN_MARINE) > 50 && CountUnitType(UNIT_TYPEID::TERRAN_SIEGETANK) >= 2)
 		|| (CountUnitType(UNIT_TYPEID::TERRAN_MARINE) > 60)) {
 		rush = true;
 		cout << "attacking" << endl;
+		//cout << "attacking" << endl;
 		//Units marines = observation->GetUnits(Unit::Alliance::Self, IsUnit(UNIT_TYPEID::TERRAN_MARINE));
 		Actions()->UnitCommand(attackers, ABILITY_ID::ATTACK_ATTACK, game_info.enemy_start_locations.front());
 		rush = false;
@@ -432,9 +435,12 @@ void FANbot::OnUnitIdle(const Unit *unit) {
 				if (geyser->assigned_harvesters < geyser->ideal_harvesters) {
 					Actions()->UnitCommand(unit, ABILITY_ID::HARVEST_GATHER, geyser);
 				}
+				else if (bases[0]->assigned_harvesters < bases[0]->ideal_harvesters) {
+						Actions()->UnitCommand(unit, ABILITY_ID::HARVEST_GATHER, mineral_target);
+				}/*
 				else {
-					Actions()->UnitCommand(unit, ABILITY_ID::HARVEST_GATHER, mineral_target);
-				}
+					TryToExpand(unit);
+				}*/
 			}
 			break;
 		}
@@ -499,6 +505,9 @@ void FANbot::OnUnitCreated(const sc2::Unit *unit) {
 			else {
 				attackers.push_back(unit);
 			}
+			break;
+		}
+		case UNIT_TYPEID::TERRAN_SCV: {
 			break;
 		}
 		default: {
@@ -623,6 +632,27 @@ const Unit* FANbot::FindNearest(UNIT_TYPEID typeId, const Point2D& start) {
 		}
 	}
 	return target;
+}
+
+void FANbot::TryToExpand(const Unit *unit) {
+	if (Observation()->GetMinerals() >= 400) {
+		Point3D closest_expansion;
+		float minimum_distance = std::numeric_limits<float>::max();
+		for (const auto& expansion : expansions_) {
+			float current_distance = Distance3D(*StartPosition, expansion);
+			if (current_distance < .01f) {
+				continue;
+			}
+
+			if (current_distance < minimum_distance) {
+				if (Query()->Placement(ABILITY_ID::BUILD_COMMANDCENTER, expansion)) {
+					closest_expansion = expansion;
+					minimum_distance = current_distance;
+				}
+			}
+		}
+		Actions()->UnitCommand(unit, ABILITY_ID::BUILD_COMMANDCENTER, Point2D(closest_expansion));
+	}
 }
 
 bool FANbot::BuildAvailableGeaser(AbilityID build_ability, UnitTypeID worker_type, Point2D base_location)
