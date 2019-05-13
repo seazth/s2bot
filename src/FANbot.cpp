@@ -371,12 +371,13 @@ void FANbot::SetupRushLocation(const ObservationInterface *observation)
 	}
 }
 
+bool rush = false;
 void FANbot::OnStep() {
 	const ObservationInterface* observation = Observation();
 	if (!observation) { return; }
 	const GameInfo& game_info = observation->GetGameInfo();
 
-	cout << "unit count : " << CountUnitType(UNIT_TYPEID::TERRAN_MARINE) << " attackers count : " << attackers.size() << endl;
+	cout << "unit count : " << CountUnitType(UNIT_TYPEID::TERRAN_MARINE) << " attackers count : " << attackers.size() << " defenders count : " << defenders.size() << endl;
 
 	TryBuildSupplyDepot();
 	if (CountUnitType(UNIT_TYPEID::TERRAN_REFINERY) < 2) {
@@ -388,11 +389,16 @@ void FANbot::OnStep() {
 	else if (CountUnitType(UNIT_TYPEID::TERRAN_FACTORY) < 1) {
 		TryBuildFactory();
 	}
+
+	//observation->GetUnits(Unit::Alliance::Self, IsUnit(UNIT_TYPEID::TERRAN_SIEGETANK))[0];
 	
-	if (CountUnitType(UNIT_TYPEID::TERRAN_MARINE) > 40) {
+	if    ((CountUnitType(UNIT_TYPEID::TERRAN_MARINE) > 50 && CountUnitType(UNIT_TYPEID::TERRAN_SIEGETANK) >= 2) 
+		|| (CountUnitType(UNIT_TYPEID::TERRAN_MARINE) > 60)) {
+		rush = true;
 		cout << "attacking" << endl;
 		//Units marines = observation->GetUnits(Unit::Alliance::Self, IsUnit(UNIT_TYPEID::TERRAN_MARINE));
 		Actions()->UnitCommand(attackers, ABILITY_ID::ATTACK_ATTACK, game_info.enemy_start_locations.front());
+		rush = false;
 	}
 }
 
@@ -469,6 +475,13 @@ void FANbot::OnUnitCreated(const sc2::Unit *unit) {
 	if (!observation) { return; }
 	const GameInfo& game_info = observation->GetGameInfo();
 
+	if (!rush 
+		&& (unit->unit_type.ToType() == UNIT_TYPEID::TERRAN_SIEGETANK
+		|| unit->unit_type.ToType() == UNIT_TYPEID::TERRAN_MARINE)) {
+		Actions()->UnitCommand(unit, ABILITY_ID::ATTACK_ATTACK, game_info.start_locations.back());
+		cout << "should go to base ";
+	}
+	
 	switch (unit->unit_type.ToType()) {
 		case UNIT_TYPEID::TERRAN_MARINE: {
 			if (CountUnitType(UNIT_TYPEID(UNIT_TYPEID::TERRAN_MARINE)) <= 13) {
@@ -522,13 +535,13 @@ bool FANbot::TryBuildStructure(ABILITY_ID ability_type_for_structure, UNIT_TYPEI
 	}
 	float rx, ry = 0.0f;
 	float scaleX, scaleY = 0.0f;
-	if (Observation()->GetGameInfo().start_locations.front().x < 30) {
+	if (Observation()->GetGameInfo().start_locations.front().x < 30) { //en bas
 		rx = CountUnitType(UNIT_TYPEID::TERRAN_BARRACKS) % 2 == 0 ? GetRandomFraction() : -GetRandomFraction();//GetRandomScalar();
 		ry = CountUnitType(UNIT_TYPEID::TERRAN_BARRACKS) % 2 == 0 ? GetRandomFraction() : -GetRandomFraction();//GetRandomScalar();
 		scaleX = GetRandomInteger(30, 45); //25.0f;
-		scaleY = GetRandomInteger(40, 60);//30.0f;
+		scaleY = GetRandomInteger(70, 90);//30.0f;
 	}
-	else {
+	else { //en haut
 		rx = CountUnitType(UNIT_TYPEID::TERRAN_BARRACKS) % 2 == 0 ? -GetRandomFraction() : GetRandomFraction();//GetRandomScalar();
 		ry = CountUnitType(UNIT_TYPEID::TERRAN_BARRACKS) % 2 == 0 ? -GetRandomFraction() : GetRandomFraction();//GetRandomScalar();
 		scaleX = GetRandomInteger(30, 45);//25.0f;
