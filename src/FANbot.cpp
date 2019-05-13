@@ -401,15 +401,17 @@ void FANbot::OnUnitIdle(const Unit *unit) {
 		case UNIT_TYPEID::TERRAN_COMMANDCENTER: {
 			if (unit->assigned_harvesters < unit->ideal_harvesters) {
 				Actions()->UnitCommand(unit, ABILITY_ID::TRAIN_SCV);
+				break;
 			}
 			else if (Observation()->GetMinerals() >= 150) {
 				Actions()->UnitCommand(unit, ABILITY_ID::MORPH_ORBITALCOMMAND);
+				break;
 			}
-			break;
 		}
 		case UNIT_TYPEID::TERRAN_ORBITALCOMMAND: {
 			if (unit->assigned_harvesters < unit->ideal_harvesters) {
 				Actions()->UnitCommand(unit, ABILITY_ID::TRAIN_SCV);
+				break;
 			}
 		}
 		case UNIT_TYPEID::TERRAN_SCV: {
@@ -421,7 +423,7 @@ void FANbot::OnUnitIdle(const Unit *unit) {
 				break;
 			}
 			for (const auto& geyser : AllGeasers) {
-				if (geyser->assigned_harvesters <= geyser->ideal_harvesters - 1) {
+				if (geyser->assigned_harvesters < geyser->ideal_harvesters) {
 					Actions()->UnitCommand(unit, ABILITY_ID::HARVEST_GATHER, geyser);
 				}
 				else {
@@ -467,9 +469,9 @@ void FANbot::OnUnitCreated(const sc2::Unit *unit) {
 	if (!observation) { return; }
 	const GameInfo& game_info = observation->GetGameInfo();
 
-	if (( unit->unit_type.ToType() == UNIT_TYPEID::TERRAN_MARINE || unit->unit_type.ToType() == UNIT_TYPEID::TERRAN_HELLIONTANK) && CountUnitType(UNIT_TYPEID(UNIT_TYPEID::TERRAN_MARINE)) <= 13) {
+	if (( unit->unit_type.ToType() == UNIT_TYPEID::TERRAN_MARINE || unit->unit_type.ToType() == UNIT_TYPEID::TERRAN_SIEGETANK) && CountUnitType(UNIT_TYPEID(UNIT_TYPEID::TERRAN_MARINE)) <= 13) {
 		defenders.push_back(unit);
-	} else if(( unit->unit_type.ToType() == UNIT_TYPEID::TERRAN_MARINE || unit->unit_type.ToType() == UNIT_TYPEID::TERRAN_HELLIONTANK)) {
+	} else if(( unit->unit_type.ToType() == UNIT_TYPEID::TERRAN_MARINE || unit->unit_type.ToType() == UNIT_TYPEID::TERRAN_SIEGETANK)) {
 		attackers.push_back(unit);
 	}
 	if (CountUnitType(UNIT_TYPEID(UNIT_TYPEID::TERRAN_MARINE)) == 13) {
