@@ -284,6 +284,7 @@ FANbot::FANbot() {
 void FANbot::OnGameStart() {
 	SetupRushLocation(Observation());
 	Actions()->SendChat("gl hf !");
+	expansions_ = search::CalculateExpansionLocations(Observation(), Query());
 
 	const Units NewUnits = Observation()->GetUnits();
 	for (auto &u : NewUnits)
@@ -376,7 +377,7 @@ void FANbot::OnStep() {
 	if (!observation) { return; }
 	const GameInfo& game_info = observation->GetGameInfo();
 
-	cout << "unit count : " << CountUnitType(UNIT_TYPEID::TERRAN_MARINE) << " attackers count : " << attackers.size() << endl;
+	//cout << "unit count : " << CountUnitType(UNIT_TYPEID::TERRAN_MARINE) << " attackers count : " << attackers.size() << endl;
 
 	TryBuildSupplyDepot();
 	if (CountUnitType(UNIT_TYPEID::TERRAN_REFINERY) < 2) {
@@ -388,9 +389,10 @@ void FANbot::OnStep() {
 	else if (CountUnitType(UNIT_TYPEID::TERRAN_FACTORY) < 1) {
 		TryBuildFactory();
 	}
+
 	
 	if (CountUnitType(UNIT_TYPEID::TERRAN_MARINE) > 40) {
-		cout << "attacking" << endl;
+		//cout << "attacking" << endl;
 		//Units marines = observation->GetUnits(Unit::Alliance::Self, IsUnit(UNIT_TYPEID::TERRAN_MARINE));
 		Actions()->UnitCommand(attackers, ABILITY_ID::ATTACK_ATTACK, game_info.enemy_start_locations.front());
 	}
@@ -426,8 +428,11 @@ void FANbot::OnUnitIdle(const Unit *unit) {
 				if (geyser->assigned_harvesters < geyser->ideal_harvesters) {
 					Actions()->UnitCommand(unit, ABILITY_ID::HARVEST_GATHER, geyser);
 				}
-				else {
+				else if (bases[0]->assigned_harvesters < bases[0]->ideal_harvesters){
 					Actions()->UnitCommand(unit, ABILITY_ID::HARVEST_GATHER, mineral_target);
+				}
+				else {
+					TryToExpand(unit);
 				}
 			}
 			break;
@@ -486,6 +491,9 @@ void FANbot::OnUnitCreated(const sc2::Unit *unit) {
 			else {
 				attackers.push_back(unit);
 			}
+			break;
+		}
+		case UNIT_TYPEID::TERRAN_SCV: {
 			break;
 		}
 		default: {
@@ -610,6 +618,25 @@ const Unit* FANbot::FindNearest(UNIT_TYPEID typeId, const Point2D& start) {
 		}
 	}
 	return target;
+}
+
+void FANbot::TryToExpand(const Unit *unit) {
+	Point3D closest_expansion; //= FindNearest(UNIT_TYPEID::NEUTRAL_MINERALFIELD, unit->pos)->pos;
+	float minimum_distance = std::numeric_limits<float>::max();
+	for (const auto& expansion : expansions_) {
+		float current_distance = Distance3D(*StartPosition, expansion);
+		if (current_distance < .01f) {
+			continue;
+		}
+
+		if (current_distance < minimum_distance) {
+			if (Query()->Placement(ABILITY_ID::BUILD_COMMANDCENTER, expansion)) {
+				closest_expansion = expansion;
+				minimum_distance = current_distance;
+			}
+		}
+	}
+	Actions()->UnitCommand(unit, ABILITY_ID::BUILD_COMMANDCENTER, Point2D(closest_expansion));
 }
 
 bool FANbot::BuildAvailableGeaser(AbilityID build_ability, UnitTypeID worker_type, Point2D base_location)
