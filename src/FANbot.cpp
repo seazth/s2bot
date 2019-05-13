@@ -469,11 +469,30 @@ void FANbot::OnUnitCreated(const sc2::Unit *unit) {
 	if (!observation) { return; }
 	const GameInfo& game_info = observation->GetGameInfo();
 
-	if (( unit->unit_type.ToType() == UNIT_TYPEID::TERRAN_MARINE || unit->unit_type.ToType() == UNIT_TYPEID::TERRAN_SIEGETANK) && CountUnitType(UNIT_TYPEID(UNIT_TYPEID::TERRAN_MARINE)) <= 13) {
-		defenders.push_back(unit);
-	} else if(( unit->unit_type.ToType() == UNIT_TYPEID::TERRAN_MARINE || unit->unit_type.ToType() == UNIT_TYPEID::TERRAN_SIEGETANK)) {
-		attackers.push_back(unit);
+	switch (unit->unit_type.ToType()) {
+		case UNIT_TYPEID::TERRAN_MARINE: {
+			if (CountUnitType(UNIT_TYPEID(UNIT_TYPEID::TERRAN_MARINE)) <= 13) {
+				defenders.push_back(unit);
+			}
+			else {
+				attackers.push_back(unit);
+			}
+			break;
+		}
+		case UNIT_TYPEID::TERRAN_SIEGETANK: {
+			if (CountUnitType(UNIT_TYPEID(UNIT_TYPEID::TERRAN_MARINE)) <= 13) {
+				defenders.push_back(unit);
+			}
+			else {
+				attackers.push_back(unit);
+			}
+			break;
+		}
+		default: {
+			break;
+		}	
 	}
+
 	if (CountUnitType(UNIT_TYPEID(UNIT_TYPEID::TERRAN_MARINE)) == 13) {
 		Actions()->UnitCommand(defenders, ABILITY_ID::MOVE, game_info.start_locations.back());
 	}
