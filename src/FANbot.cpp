@@ -283,7 +283,7 @@ FANbot::FANbot() {
 
 void FANbot::OnGameStart() {
 	Actions()->SendChat("gl hf !");
-
+	Actions()->SendChat("MAUBEUGE");
 	const Units NewUnits = Observation()->GetUnits();
 	for (auto &u : NewUnits)
 	{
@@ -376,6 +376,8 @@ void FANbot::OnStep() {
 	if (!observation) { return; }
 	const GameInfo& game_info = observation->GetGameInfo();
 
+	cout << "unit count : " << CountUnitType(UNIT_TYPEID::TERRAN_MARINE) << " attackers count : " << attackers.size() << endl;
+
 	TryBuildSupplyDepot();
 	if (CountUnitType(UNIT_TYPEID::TERRAN_REFINERY) < 2) {
 		TryBuildRefinery();
@@ -386,10 +388,11 @@ void FANbot::OnStep() {
 	else if (CountUnitType(UNIT_TYPEID::TERRAN_FACTORY) < 1) {
 		TryBuildFactory();
 	}
-
-	if (CountUnitType(UNIT_TYPEID::TERRAN_MARINE) == 40) {
-		Units marines = observation->GetUnits(Unit::Alliance::Self, IsUnit(UNIT_TYPEID::TERRAN_MARINE));
-		Actions()->UnitCommand(marines, ABILITY_ID::ATTACK_ATTACK, game_info.enemy_start_locations.front());
+	
+	if (CountUnitType(UNIT_TYPEID::TERRAN_MARINE) > 40) {
+		cout << "attacking" << endl;
+		//Units marines = observation->GetUnits(Unit::Alliance::Self, IsUnit(UNIT_TYPEID::TERRAN_MARINE));
+		Actions()->UnitCommand(attackers, ABILITY_ID::ATTACK_ATTACK, game_info.enemy_start_locations.front());
 	}
 }
 
@@ -464,8 +467,19 @@ void FANbot::OnUnitDestroyed(const Unit *unit) {
 	
 }
 
-void FANbot::OnUnitCreated(const Unit *unit) {
+void FANbot::OnUnitCreated(const sc2::Unit *unit) {
+	const ObservationInterface* observation = Observation();
+	if (!observation) { return; }
+	const GameInfo& game_info = observation->GetGameInfo();
 
+	if (( unit->unit_type.ToType() == UNIT_TYPEID::TERRAN_MARINE || unit->unit_type.ToType() == UNIT_TYPEID::TERRAN_HELLIONTANK) && CountUnitType(UNIT_TYPEID(UNIT_TYPEID::TERRAN_MARINE)) <= 13) {
+		defenders.push_back(unit);
+	} else if(( unit->unit_type.ToType() == UNIT_TYPEID::TERRAN_MARINE || unit->unit_type.ToType() == UNIT_TYPEID::TERRAN_HELLIONTANK)) {
+		attackers.push_back(unit);
+	}
+	if (CountUnitType(UNIT_TYPEID(UNIT_TYPEID::TERRAN_MARINE)) == 13) {
+		Actions()->UnitCommand(defenders, ABILITY_ID::MOVE, game_info.start_locations.back());
+	}
 }
 
 void FANbot::OnUnitEnterVision(const Unit *unit) {

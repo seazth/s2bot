@@ -39,6 +39,9 @@ private:
 	const Unit* FindNearestGas(const Point2D& start);
 	bool TryBuildStructureByTag(AbilityID ability_type_for_structure, UnitTypeID unit_type, Tag location_tag);
 	bool TryBuildFactory();
+
+	std::vector<const sc2::Unit *> defenders;
+	std::vector<const sc2::Unit *> attackers;
 };
 
 
