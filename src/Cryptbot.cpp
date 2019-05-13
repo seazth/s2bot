@@ -4,8 +4,6 @@
 #include "sc2api/sc2_api.h"
 #include "Strategys.h"
 
-using namespace std;
-
 struct IsAttackable {
 	bool operator()(const Unit& unit) {
 		switch (unit.unit_type.ToType()) {
@@ -506,8 +504,6 @@ int32_t CryptBot::GetCurrentMaxSupply()
 
 void CryptBot::OnGameStart()
 {
-	Actions()->SendChat("get rekt !!");
-
 	const Units NewUnits = Observation()->GetUnits();
 	for (auto &u : NewUnits)
 	{
@@ -536,51 +532,51 @@ void CryptBot::OnGameStart()
 
 void CryptBot::OnUnitDestroyed(const Unit *unit) {
 	switch (unit->unit_type.ToType()) {
-		case UNIT_TYPEID::PROTOSS_PROBE: {
-			if (unit->tag == ScoutingUnitTag)
-			{
-				Scouting = false;
-				ScoutingUnitTag = GetAvailableWorker();
-			}
-			break;
-		}
-		case UNIT_TYPEID::PROTOSS_PYLON:
-			if (unit->alliance == sc2::Unit::Alliance::Self && Distance2D(unit->pos, *StartPosition) > Distance2D(unit->pos, RushLocation))
-			{
-				RushPylonDestroyed = true;
-				UseAltStrategy = true;
-			}
-			break;
-
-		case UNIT_TYPEID::PROTOSS_PHOTONCANNON:
+	case UNIT_TYPEID::PROTOSS_PROBE: {
+		if (unit->tag == ScoutingUnitTag)
 		{
-			if (unit->alliance == sc2::Unit::Alliance::Self && Distance2D(unit->pos, *StartPosition) < Distance2D(unit->pos, RushLocation))
-			{
-				CurrentDefenseCannons -= 1;
-				MaxDefenseCannons += 2;
-			}
-			break;
+			Scouting = false;
+			ScoutingUnitTag = GetAvailableWorker();
 		}
-		case UNIT_TYPEID::PROTOSS_VOIDRAY: {
-			/*
-			for (auto& ThisBG : BattleGroups)
+		break;
+	}
+	case UNIT_TYPEID::PROTOSS_PYLON:
+		if (unit->alliance == sc2::Unit::Alliance::Self && Distance2D(unit->pos, *StartPosition) > Distance2D(unit->pos, RushLocation))
+		{
+			RushPylonDestroyed = true;
+			UseAltStrategy = true;
+		}
+		break;
+
+	case UNIT_TYPEID::PROTOSS_PHOTONCANNON:
+	{
+		if (unit->alliance == sc2::Unit::Alliance::Self && Distance2D(unit->pos, *StartPosition) < Distance2D(unit->pos, RushLocation))
+		{
+			CurrentDefenseCannons -= 1;
+			MaxDefenseCannons += 2;
+		}
+		break;
+	}
+	case UNIT_TYPEID::PROTOSS_VOIDRAY: {
+		/*
+		for (auto& ThisBG : BattleGroups)
+		{
+			int thisMember = 0;
+			for (const uint64_t ThisUnit : ThisBG.Members)
 			{
-				int thisMember = 0;
-				for (const uint64_t ThisUnit : ThisBG.Members)
+				if (ThisUnit == unit.tag)
 				{
-					if (ThisUnit == unit.tag)
-					{
-						ThisBG.Members.erase(ThisBG.Members.begin() + thisMember);
-					}
-					thisMember++;
+					ThisBG.Members.erase(ThisBG.Members.begin() + thisMember);
 				}
+				thisMember++;
 			}
-			*/
 		}
+		*/
+	}
 	}
 }
 
-/*bool CryptBot::CheckShouldBuildProbe(const sc2::Unit Nexus)
+bool CryptBot::CheckShouldBuildProbe(const sc2::Unit Nexus)
 {
 	const ObservationInterface* observation = Observation();
 	if (CurrentMaxSupply >= observation->GetFoodUsed())
@@ -599,7 +595,7 @@ void CryptBot::OnUnitDestroyed(const Unit *unit) {
 		return true;
 	}
 	return false;
-}*/
+}
 void CryptBot::OnUnitEnterVision(const Unit *unit)
 {
 	if (unit->unit_type == sc2::UNIT_TYPEID::TERRAN_SCV 
@@ -883,103 +879,25 @@ int64_t CryptBot::FindNearestUnit(const Point2D& start, Units UnitSet, ATTACK_TY
 
 
 void CryptBot::OnUnitIdle(const Unit *unit) {
+	if (unit->tag == RushUnitTag && RushPylon == true)
+	{
+		ScoutingUnitTag = RushUnitTag;
+		TryBuildStructure(ABILITY_ID::BUILD_PYLON, UNIT_TYPEID::PROTOSS_PROBE, GetNearestBuildableLocationFor(ABILITY_ID::BUILD_PYLON, RushLocation, QueryType::None, PylonSearchParams), true);
+		RushPylon = false;
+
+	}
 	switch (unit->unit_type.ToType()) {
-		case UNIT_TYPEID::TERRAN_COMMANDCENTER: {
-			if (unit->assigned_harvesters < unit->ideal_harvesters) {
-				Actions()->UnitCommand(unit, ABILITY_ID::TRAIN_SCV);
-			}
-			else if (Observation()->GetMinerals() >= 150){
-				Actions()->UnitCommand(unit, ABILITY_ID::MORPH_ORBITALCOMMAND);
-			}
-			break;
-		}
-		case UNIT_TYPEID::TERRAN_ORBITALCOMMAND: {
-			if (unit->assigned_harvesters < unit->ideal_harvesters) {
-				Actions()->UnitCommand(unit, ABILITY_ID::TRAIN_SCV);
-			}
-		}
-		case UNIT_TYPEID::TERRAN_SCV: {
-			const Unit* mineral_target = FindNearestMineralPatchTuto(unit->pos);
-			Units bases = Observation()->GetUnits(Unit::Alliance::Self, IsTownHall());
-			Units NearbyGeasers = Observation()->GetUnits(Unit::Alliance::Self, IsUnit(UNIT_TYPEID::TERRAN_REFINERY));
+	case UNIT_TYPEID::PROTOSS_PROBE: {
+		if (unit->tag != ScoutingUnitTag)
+		{
+			uint64_t valid_mineral_patch;
+			FindNearestMineralPatch(unit->pos, valid_mineral_patch);
+			Actions()->UnitCommand(unit, ABILITY_ID::HARVEST_GATHER, Observation()->GetUnit(valid_mineral_patch));
+			return;
 
-			if (!mineral_target) {
-				break;
-			}
-			for (const auto& geyser : NearbyGeasers) {
-				if (geyser->assigned_harvesters < geyser->ideal_harvesters) {
-					Actions()->UnitCommand(unit, ABILITY_ID::HARVEST_GATHER, geyser);
-					break;
-				}
-				else {
-					Actions()->UnitCommand(unit, ABILITY_ID::HARVEST_GATHER, mineral_target);
-					break;
-				}
-			}
-			break;
-		}
-		case UNIT_TYPEID::TERRAN_BARRACKS: {
-			if (CountUnitType(UNIT_TYPEID::TERRAN_BARRACKSTECHLAB) == 0) {
-				Actions()->UnitCommand(unit, ABILITY_ID::BUILD_TECHLAB_BARRACKS);
-			}
-			else {
-				Actions()->UnitCommand(unit, ABILITY_ID::BUILD_REACTOR);
-				Actions()->UnitCommand(unit, ABILITY_ID::TRAIN_MARINE);
-				Actions()->UnitCommand(unit, ABILITY_ID::TRAIN_MARINE);
-			}	
-			break;
-		}
-		case UNIT_TYPEID::TERRAN_BARRACKSTECHLAB: {
-			Actions()->UnitCommand(unit, ABILITY_ID::RESEARCH_COMBATSHIELD);
-			break;
-		}
-		case UNIT_TYPEID::TERRAN_FACTORY: {
-			if (CountUnitType(UNIT_TYPEID::TERRAN_FACTORYTECHLAB) == 0) {
-				Actions()->UnitCommand(unit, ABILITY_ID::BUILD_TECHLAB);
-			}
-			Actions()->UnitCommand(unit, ABILITY_ID::TRAIN_SIEGETANK);
-			break;
-		}
-		/*case UNIT_TYPEID::TERRAN_MARINE: {
-			const GameInfo& game_info = Observation()->GetGameInfo();
-			Actions()->UnitCommand(unit, ABILITY_ID::ATTACK_ATTACK, game_info.enemy_start_locations.front());
-			break;
-		}*/
-		default: {
-			break;
-		}		
-	}
-}
-
-const Unit* CryptBot::FindNearestMineralPatchTuto(const Point2D& start) {
-	Units units = Observation()->GetUnits(Unit::Alliance::Neutral);
-	float distance = std::numeric_limits<float>::max();
-	const Unit* target = nullptr;
-	for (const auto& u : units) {
-		if (u->unit_type == UNIT_TYPEID::NEUTRAL_MINERALFIELD) {
-			float d = DistanceSquared2D(u->pos, start);
-			if (d < distance) {
-                distance = d;
-				target = u;
-			}
 		}
 	}
-	return target;
-}
-const Unit* CryptBot::FindNearestGas(const Point2D& start) {
-	Units units = Observation()->GetUnits(Unit::Alliance::Neutral);
-	float distance = std::numeric_limits<float>::max();
-	const Unit* target = nullptr;
-	for (const auto& u : units) {
-		if (u->unit_type == UNIT_TYPEID::NEUTRAL_VESPENEGEYSER) {
-			float d = DistanceSquared2D(u->pos, start);
-			if (d < distance) {
-				distance = d;
-				target = u;
-			}
-		}
 	}
-	return target;
 }
 
 bool CryptBot::BuildAvailableGeaser(AbilityID build_ability, UnitTypeID worker_type, Point2D base_location)
@@ -1208,44 +1126,14 @@ void CryptBot::CheckScouting(const ObservationInterface *observation)
 	}
 }
 
-bool flag = true;
 void CryptBot::OnStep() {
 	const ObservationInterface* observation = Observation();
 	if (!observation)
 	{
 		return;
 	}
-	const GameInfo& game_info = Observation()->GetGameInfo();
-
-	TryBuildSupplyDepot();
-	TryBuildRefinery();
-	if (CountUnitType(UNIT_TYPEID::TERRAN_BARRACKS) < 5) {
-		TryBuildBarracks();
-	}
-	
-	//std::cout << "army count : " << observation->GetArmyCount() << std::endl;
-	/*Units units = observation->GetUnits(Unit::Alliance::Self, IsUnit(UNIT_TYPEID::TERRAN_MARINE));
-	if (observation->GetArmyCount() == 6 && flag == true) {
-		flag = false;
-		auto game_info = observation->GetGameInfo();
-		cout << "start x: " << game_info.start_locations.back().x << " - y: " << game_info.start_locations.back().y << endl;
-		Actions()->UnitCommand(units[0], ABILITY_ID::ATTACK_ATTACK, game_info.enemy_start_locations.front());
-		for (int i = 0; i < 3; i++) {
-			
-		}
-	}*/
-
-	else if (CountUnitType(UNIT_TYPEID::TERRAN_FACTORY) < 1) {
-		TryBuildFactory();
-	}
-
-	if (CountUnitType(UNIT_TYPEID::TERRAN_MARINE) == 40) {
-		Units marines = observation->GetUnits(Unit::Alliance::Self, IsUnit(UNIT_TYPEID::TERRAN_MARINE));	
-		Actions()->UnitCommand(marines, ABILITY_ID::ATTACK_ATTACK, game_info.enemy_start_locations.front());
-	}
-
 	//Throttle some behavior that can wait to avoid duplicate orders.
-	/*int frames_to_skip = 4;
+	int frames_to_skip = 4;
 	if (observation->GetFoodUsed() >= observation->GetFoodCap()) {
 		frames_to_skip = 6;
 	}
@@ -1268,7 +1156,7 @@ void CryptBot::OnStep() {
 	CurrentMaxSupply = GetCurrentMaxSupply();
 	if (RushLocation == Point2D(0.0f, 0.0f))
 	{
-		std::cout << "Null rush location" << std::endl;
+		std::cout << "Null rush location";
 	}
 
 	CheckScouting(observation);
@@ -1303,96 +1191,8 @@ void CryptBot::OnStep() {
 
 		}
 
-	}*/
-}
-
-bool CryptBot::TryBuildStructureTuto(ABILITY_ID ability_type_for_structure, UNIT_TYPEID unit_type) {
-	const ObservationInterface* observation = Observation();
-
-	// If a unit already is building a supply structure of this type, do nothing.
-	// Also get an scv to build the structure.
-	const Unit* unit_to_build = nullptr;
-	Units units = observation->GetUnits(Unit::Alliance::Self);
-	for (const auto& unit : units) {
-		for (const auto& order : unit->orders) {
-			if (order.ability_id == ability_type_for_structure) {
-				return false;
-			}
-		}
-
-		if (unit->unit_type == unit_type) {
-			unit_to_build = unit;
-		}
-	}
-	float rx, ry = 0.0f;
-	float scaleX, scaleY = 0.0f;
-	if (Observation()->GetGameInfo().start_locations.front().x < 30) {
-		rx = CountUnitType(UNIT_TYPEID::TERRAN_BARRACKS) % 2 == 0 ? GetRandomFraction() : -GetRandomFraction();//GetRandomScalar();
-		ry = CountUnitType(UNIT_TYPEID::TERRAN_BARRACKS) % 2 == 0 ? GetRandomFraction() : -GetRandomFraction();//GetRandomScalar();
-		scaleX = GetRandomInteger(30,45); //25.0f;
-		scaleY = GetRandomInteger(40, 60);//30.0f;
-	} else {
-		rx = CountUnitType(UNIT_TYPEID::TERRAN_BARRACKS) % 2 == 0 ? -GetRandomFraction() : GetRandomFraction();//GetRandomScalar();
-		ry = CountUnitType(UNIT_TYPEID::TERRAN_BARRACKS) % 2 == 0 ? -GetRandomFraction() : GetRandomFraction();//GetRandomScalar();
-		scaleX = GetRandomInteger(30, 45);//25.0f;
-		scaleY = GetRandomInteger(40, 60);//35.0f;
 	}
 
-	if (ability_type_for_structure == ABILITY_ID::BUILD_REFINERY) {
-		Units bases = observation->GetUnits(Unit::Alliance::Self, IsTownHall());
-		/*Point2D start = bases[0]->pos;
-		//Point2D start = Observation()->GetStartLocation();
-		const Unit* gas_target = FindNearestGas(start);
-		Actions()->UnitCommand(unit_to_build, ability_type_for_structure, gas_target);*/
-		for (const auto& base : bases)
-		{
-			BuildAvailableGeaser(ABILITY_ID::BUILD_REFINERY, UNIT_TYPEID::TERRAN_SCV, base->pos);
-		}
-	}
-	else {
-		Actions()->UnitCommand(unit_to_build,
-			ability_type_for_structure,
-			Point2D(unit_to_build->pos.x + rx * scaleX, unit_to_build->pos.y + ry * scaleY));
-	}
-
-	return true;
-}
-
-bool CryptBot::TryBuildSupplyDepot() {
-	const ObservationInterface* observation = Observation();
-
-	// If we are not supply capped, don't build a supply depot.
-	if (observation->GetFoodUsed() <= observation->GetFoodCap() - 2)
-		return false;
-
-	// Try and build a depot. Find a random SCV and give it the order.
-	return TryBuildStructureTuto(ABILITY_ID::BUILD_SUPPLYDEPOT);
-}
-
-size_t CryptBot::CountUnitType(UNIT_TYPEID unit_type) {
-	return Observation()->GetUnits(Unit::Alliance::Self, IsUnit(unit_type)).size();
-}
-
-
-bool CryptBot::TryBuildBarracks() {
-	const ObservationInterface* observation = Observation();
-	if (CountUnitType(UNIT_TYPEID::TERRAN_SUPPLYDEPOT) < 1 || observation->GetMinerals() < 150) {
-		return false;
-	}
-	return TryBuildStructureTuto(ABILITY_ID::BUILD_BARRACKS);
-}
-bool CryptBot::TryBuildRefinery() {
-	const ObservationInterface* observation = Observation();
-	if (CountUnitType(UNIT_TYPEID::TERRAN_REFINERY) >= 2 || observation->GetMinerals() < 75) {
-		return false;
-	}
-	return TryBuildStructureTuto(ABILITY_ID::BUILD_REFINERY);
-}
-bool CryptBot::TryBuildFactory() {
-	if (Observation()->GetMinerals() < 150 && Observation()->GetVespene() < 100) {
-		return false;
-	}
-	return TryBuildStructureTuto(ABILITY_ID::BUILD_FACTORY);
 }
 
 void CryptBot::TryBuildArmy(const ObservationInterface* observation)
