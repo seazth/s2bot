@@ -389,7 +389,6 @@ void FANbot::OnStep() {
 	else if (CountUnitType(UNIT_TYPEID::TERRAN_FACTORY) < 1) {
 		TryBuildFactory();
 	}
-
 	
 	if (CountUnitType(UNIT_TYPEID::TERRAN_MARINE) > 40) {
 		//cout << "attacking" << endl;
@@ -428,8 +427,8 @@ void FANbot::OnUnitIdle(const Unit *unit) {
 				if (geyser->assigned_harvesters < geyser->ideal_harvesters) {
 					Actions()->UnitCommand(unit, ABILITY_ID::HARVEST_GATHER, geyser);
 				}
-				else if (bases[0]->assigned_harvesters < bases[0]->ideal_harvesters){
-					Actions()->UnitCommand(unit, ABILITY_ID::HARVEST_GATHER, mineral_target);
+				else if (bases[0]->assigned_harvesters < bases[0]->ideal_harvesters) {
+						Actions()->UnitCommand(unit, ABILITY_ID::HARVEST_GATHER, mineral_target);
 				}
 				else {
 					TryToExpand(unit);
@@ -621,22 +620,24 @@ const Unit* FANbot::FindNearest(UNIT_TYPEID typeId, const Point2D& start) {
 }
 
 void FANbot::TryToExpand(const Unit *unit) {
-	Point3D closest_expansion; //= FindNearest(UNIT_TYPEID::NEUTRAL_MINERALFIELD, unit->pos)->pos;
-	float minimum_distance = std::numeric_limits<float>::max();
-	for (const auto& expansion : expansions_) {
-		float current_distance = Distance3D(*StartPosition, expansion);
-		if (current_distance < .01f) {
-			continue;
-		}
+	if (Observation()->GetMinerals() >= 400) {
+		Point3D closest_expansion;
+		float minimum_distance = std::numeric_limits<float>::max();
+		for (const auto& expansion : expansions_) {
+			float current_distance = Distance3D(*StartPosition, expansion);
+			if (current_distance < .01f) {
+				continue;
+			}
 
-		if (current_distance < minimum_distance) {
-			if (Query()->Placement(ABILITY_ID::BUILD_COMMANDCENTER, expansion)) {
-				closest_expansion = expansion;
-				minimum_distance = current_distance;
+			if (current_distance < minimum_distance) {
+				if (Query()->Placement(ABILITY_ID::BUILD_COMMANDCENTER, expansion)) {
+					closest_expansion = expansion;
+					minimum_distance = current_distance;
+				}
 			}
 		}
+		Actions()->UnitCommand(unit, ABILITY_ID::BUILD_COMMANDCENTER, Point2D(closest_expansion));
 	}
-	Actions()->UnitCommand(unit, ABILITY_ID::BUILD_COMMANDCENTER, Point2D(closest_expansion));
 }
 
 bool FANbot::BuildAvailableGeaser(AbilityID build_ability, UnitTypeID worker_type, Point2D base_location)
