@@ -15,6 +15,7 @@ struct IsAttackable {
 		}
 	}
 };
+
 struct IsBuilding {
 	bool operator()(const sc2::Unit & unit)
 	{
@@ -238,7 +239,6 @@ struct IsGroundArmy {
 	}
 };
 
-
 struct IsTownHall {
 	bool operator()(const Unit& unit) {
 		switch (unit.unit_type.ToType()) {
@@ -282,8 +282,9 @@ FANbot::FANbot() {
 }
 
 void FANbot::OnGameStart() {
+	SetupRushLocation(Observation());
 	Actions()->SendChat("gl hf !");
-	Actions()->SendChat("MAUBEUGE");
+
 	const Units NewUnits = Observation()->GetUnits();
 	for (auto &u : NewUnits)
 	{
@@ -306,7 +307,6 @@ void FANbot::OnGameStart() {
 		}
 		OpponentRace = info.race_actual;
 	}
-	SetupRushLocation(Observation());
 }
 
 void FANbot::SetupRushLocation(const ObservationInterface *observation)
@@ -413,7 +413,7 @@ void FANbot::OnUnitIdle(const Unit *unit) {
 			}
 		}
 		case UNIT_TYPEID::TERRAN_SCV: {
-			const Unit* mineral_target = FindNearestMineralPatch(*StartPosition);
+			const Unit* mineral_target = FindNearest(UNIT_TYPEID::NEUTRAL_MINERALFIELD, *StartPosition);
 			Units bases = Observation()->GetUnits(Unit::Alliance::Self, IsTownHall());
 			Units AllGeasers = Observation()->GetUnits(Unit::Alliance::Self, IsUnit(UNIT_TYPEID::TERRAN_REFINERY));
 
@@ -452,11 +452,6 @@ void FANbot::OnUnitIdle(const Unit *unit) {
 			Actions()->UnitCommand(unit, ABILITY_ID::TRAIN_SIEGETANK);
 			break;
 		}
-		/*case UNIT_TYPEID::TERRAN_MARINE: {
-			const GameInfo& game_info = Observation()->GetGameInfo();
-			Actions()->UnitCommand(unit, ABILITY_ID::ATTACK_ATTACK, game_info.enemy_start_locations.front());
-			break;
-		}*/
 		default: {
 			break;
 		}
@@ -524,7 +519,7 @@ bool FANbot::TryBuildStructure(ABILITY_ID ability_type_for_structure, UNIT_TYPEI
 		
 		/*Point2D start = *StartPosition;
 		//Point2D start = bases[0]->pos;
-		const Unit* gas_target = FindNearestGas(start);
+		const Unit* gas_target = FindNearest(UNIT_TYPEID::NEUTRAL_VESPENEGEYSER, start);
 		Actions()->UnitCommand(unit_to_build, ability_type_for_structure, gas_target);*/
 		for (const auto& base : bases)
 		{
@@ -580,27 +575,12 @@ bool FANbot::TryBuildFactory() {
 	return TryBuildStructure(ABILITY_ID::BUILD_FACTORY);
 }
 
-const Unit* FANbot::FindNearestMineralPatch(const Point2D& start) {
+const Unit* FANbot::FindNearest(UNIT_TYPEID typeId, const Point2D& start) {
 	Units units = Observation()->GetUnits(Unit::Alliance::Neutral);
 	float distance = std::numeric_limits<float>::max();
 	const Unit* target = nullptr;
 	for (const auto& u : units) {
-		if (u->unit_type == UNIT_TYPEID::NEUTRAL_MINERALFIELD) {
-			float d = DistanceSquared2D(u->pos, start);
-			if (d < distance) {
-				distance = d;
-				target = u;
-			}
-		}
-	}
-	return target;
-}
-const Unit* FANbot::FindNearestGas(const Point2D& start) {
-	Units units = Observation()->GetUnits(Unit::Alliance::Neutral);
-	float distance = std::numeric_limits<float>::max();
-	const Unit* target = nullptr;
-	for (const auto& u : units) {
-		if (u->unit_type == UNIT_TYPEID::NEUTRAL_VESPENEGEYSER) {
+		if (u->unit_type == typeId) {
 			float d = DistanceSquared2D(u->pos, start);
 			if (d < distance) {
 				distance = d;

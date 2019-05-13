@@ -32,11 +32,10 @@ private:
 	//
 	bool TryBuildStructure(ABILITY_ID ability_type_for_structure, UNIT_TYPEID unit_type = UNIT_TYPEID::TERRAN_SCV);
 	bool TryBuildSupplyDepot();
-	const Unit* FindNearestMineralPatch(const Point2D& start);
+	const Unit* FANbot::FindNearest(UNIT_TYPEID typeId, const Point2D& start);
 	size_t CountUnitType(UNIT_TYPEID unit_type);
 	bool TryBuildBarracks();
 	bool TryBuildRefinery();
-	const Unit* FindNearestGas(const Point2D& start);
 	bool TryBuildStructureByTag(AbilityID ability_type_for_structure, UnitTypeID unit_type, Tag location_tag);
 	bool TryBuildFactory();
 
