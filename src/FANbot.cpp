@@ -429,10 +429,10 @@ void FANbot::OnUnitIdle(const Unit *unit) {
 				}
 				else if (bases[0]->assigned_harvesters < bases[0]->ideal_harvesters) {
 						Actions()->UnitCommand(unit, ABILITY_ID::HARVEST_GATHER, mineral_target);
-				}
+				}/*
 				else {
 					TryToExpand(unit);
-				}
+				}*/
 			}
 			break;
 		}
