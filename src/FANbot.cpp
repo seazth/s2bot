@@ -379,8 +379,7 @@ void FANbot::OnStep() {
 	const GameInfo& game_info = observation->GetGameInfo();
 
 	cout << "unit count : " << CountUnitType(UNIT_TYPEID::TERRAN_MARINE) << " attackers count : " << attackers.size() << " defenders count : " << defenders.size() << endl;
-	//cout << "unit count : " << CountUnitType(UNIT_TYPEID::TERRAN_MARINE) << " attackers count : " << attackers.size() << endl;
-
+	
 	TryBuildSupplyDepot();
 	if (CountUnitType(UNIT_TYPEID::TERRAN_REFINERY) < 2) {
 		TryBuildRefinery();
@@ -392,14 +391,9 @@ void FANbot::OnStep() {
 		TryBuildFactory();
 	}
 
-	//observation->GetUnits(Unit::Alliance::Self, IsUnit(UNIT_TYPEID::TERRAN_SIEGETANK))[0];
-	
 	if ((CountUnitType(UNIT_TYPEID::TERRAN_MARINE) > 50 && CountUnitType(UNIT_TYPEID::TERRAN_SIEGETANK) >= 2)
 		|| (CountUnitType(UNIT_TYPEID::TERRAN_MARINE) > 60)) {
 		rush = true;
-		cout << "attacking" << endl;
-		//cout << "attacking" << endl;
-		//Units marines = observation->GetUnits(Unit::Alliance::Self, IsUnit(UNIT_TYPEID::TERRAN_MARINE));
 		Actions()->UnitCommand(attackers, ABILITY_ID::ATTACK_ATTACK, game_info.enemy_start_locations.front());
 		rush = false;
 	}
@@ -485,7 +479,6 @@ void FANbot::OnUnitCreated(const sc2::Unit *unit) {
 		&& (unit->unit_type.ToType() == UNIT_TYPEID::TERRAN_SIEGETANK
 		|| unit->unit_type.ToType() == UNIT_TYPEID::TERRAN_MARINE)) {
 		Actions()->UnitCommand(unit, ABILITY_ID::ATTACK_ATTACK, game_info.start_locations.back());
-		cout << "should go to base ";
 	}
 	
 	switch (unit->unit_type.ToType()) {
@@ -576,7 +569,6 @@ bool FANbot::TryBuildStructure(ABILITY_ID ability_type_for_structure, UNIT_TYPEI
 			ability_type_for_structure,
 			Point2D(unit_to_build->pos.x + rx * 15.0f, unit_to_build->pos.y + ry * 15.0f));
 	} else {
-		//if (ability_type_for_structure == ABILITY_ID::BUILD_BARRACKS) cout << "x : " << unit_to_build->pos.x + rx * 15.0f << " - y: " << unit_to_build->pos.y + ry * 15.0f << endl;
 		Actions()->UnitCommand(unit_to_build,
 			ability_type_for_structure,
 			Point2D(unit_to_build->pos.x + rx * scaleX, unit_to_build->pos.y + ry * scaleY));
